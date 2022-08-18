@@ -3,6 +3,8 @@ const getWorkingSum = (totalMoney, workingPercent) => {
   return workMoney;
 };
 
+// SILLY UPDATE
+
 const buyPriceValues = async (startBuyPrice, percentDecreasing) => {
   let pricesToBuy = [startBuyPrice.toFixed(6)];
   let newPrice = startBuyPrice;
