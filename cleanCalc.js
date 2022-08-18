@@ -9,7 +9,7 @@ const buyPriceValues = async (startBuyPrice, percentDecreasing) => {
   let pricesToBuy = [startBuyPrice.toFixed(6)];
   let newPrice = startBuyPrice;
   for (let i = 1; i <= 5; i++) {
-    newPrice = newPrice - startBuyPrice * (percentDecreasing / 100);
+    newPrice = startBuyPrice - startBuyPrice * (percentDecreasing[i -1] / 100);
     pricesToBuy.push(Math.round(newPrice*100000)/100000);
   }
 

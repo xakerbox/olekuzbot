@@ -8,7 +8,7 @@ const buyPriceValues = (startBuyPrice, percentDecreasing) => {
   let pricesToBuy = [startBuyPrice.toFixed(6)];
   let newPrice = startBuyPrice;
   for (let i = 1; i <= 5; i++) {
-    newPrice = newPrice - startBuyPrice * (percentDecreasing / 100);
+    newPrice = startBuyPrice - startBuyPrice * (percentDecreasing[i -1] / 100);
     pricesToBuy.push(newPrice.toFixed(6));
   }
 
@@ -106,15 +106,15 @@ const main = (
 // МЕНЯЕШЬ ЗНАЧЕНИЯ У ЭТИХ ПЯТИ ПЕРЕМЕННЫХ:
 
 const currentPrice = 1; // стартовая стоимость монеты в у.е.(например: 0.54, 2.34)
-const percentDecr = 0.5; //процент снижения цены (например: 2%, 1.5% (знак процента не пишем))
+const percentDecr = [1, 2, 4, 5, 6]; //процент снижения цены (например: 2%, 1.5% (знак процента не пишем))
 const totalSum = 100 * 10; // общая сумма (всего денег) (она будет делиться 50/50 и на кол-во стеков)
 const stackQnt = 1; // кол-во стеков для первоначальной суммы
 const workingPart = 30; // размер рабочей доли (например: 10/90 => вводим 10, 30/70, вводим 30)
 
-const pricesToBuy = buyPriceValues(startPrice=0.72, percentDecreasing=1);
-const coinsQNT = countStartCoinsValue(pricesToBuy, 1000, 30)
-console.log('COUNTED PRICES TO BUY: ', pricesToBuy);
-console.log('COINS QUANTITY: ', coinsQNT);
+// const pricesToBuy = buyPriceValues(startPrice=0.72, percentDecreasing=1);
+// const coinsQNT = countStartCoinsValue(pricesToBuy, 1000, 30)
+// console.log('COUNTED PRICES TO BUY: ', pricesToBuy);
+// console.log('COINS QUANTITY: ', coinsQNT);
 
 /////////////
 /////////////
