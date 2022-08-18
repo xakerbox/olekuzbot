@@ -13,7 +13,7 @@ const { sendBot } = require("../telegrambot")
 const coinName = '1INCHUSDT';
 const stackSize = 67 * 10;
 const stackDevider = 30;
-const middleSplitter = 0.8;
+const middleSplitter = 0.8; // 5(!!) усреднений в массиве!!! [1, 2, 3, 4, 8] расчет от ПЕРВИЧНОЙ цены!
 const fixingIncomeValue = 1.0026;
 
 //////////////////////////////////////////////

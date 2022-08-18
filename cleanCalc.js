@@ -9,14 +9,18 @@ const buyPriceValues = async (startBuyPrice, percentDecreasing) => {
   let pricesToBuy = [startBuyPrice.toFixed(6)];
   let newPrice = startBuyPrice;
   for (let i = 1; i <= 5; i++) {
-    newPrice = startBuyPrice - startBuyPrice * (percentDecreasing[i -1] / 100);
-    pricesToBuy.push(Math.round(newPrice*100000)/100000);
+    newPrice = startBuyPrice - startBuyPrice * (percentDecreasing[i - 1] / 100);
+    pricesToBuy.push(Math.round(newPrice * 100000) / 100000);
   }
 
   return pricesToBuy; // возвращает стоимость при которой пора входить (уменьшается на percentDecreasing)
 };
 
-const countStartCoinsValue = async (pricesToBuy, totalMoney, workingPercent) => {
+const countStartCoinsValue = async (
+  pricesToBuy,
+  totalMoney,
+  workingPercent
+) => {
   const plu = [1.5, 2.25, 3.375, 5.0625, 7.59375];
 
   const workingMoney = getWorkingSum(totalMoney, workingPercent);
@@ -35,7 +39,7 @@ const countStartCoinsValue = async (pricesToBuy, totalMoney, workingPercent) => 
   let coinsQuantity = [parseInt(coins)];
 
   for (let i of plu) {
-    coinsQuantity.push(parseInt(coins * i))
+    coinsQuantity.push(parseInt(coins * i));
     totalCoins = totalCoins + coins * i;
     counter += 1;
   }
@@ -48,11 +52,9 @@ const countStartCoinsValue = async (pricesToBuy, totalMoney, workingPercent) => 
 //   return everyStackValue;
 // };
 
-module.exports = {buyPriceValues, countStartCoinsValue}
+module.exports = { buyPriceValues, countStartCoinsValue };
 
 // const pricesToBuy = buyPriceValues(startPrice=0.72, percentDecreasing=1);
 // const coinsQNT = countStartCoinsValue(pricesToBuy, 500, 30)
 // console.log('COUNTED PRICES TO BUY: ', pricesToBuy);
 // console.log('COINS QUANTITY: ', coinsQNT);
-
-
