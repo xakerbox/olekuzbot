@@ -2,8 +2,7 @@ const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
 const { buyCoins } = require("../hashing");
-const { sendBot } = require("../telegrambot")
-
+const { sendBot, sendErrorMessage } = require("../telegrambot")
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////
@@ -11,10 +10,10 @@ const { sendBot } = require("../telegrambot")
 //////////////////////////////////////////////
 
 const coinName = '1INCHUSDT';
-const stackSize = 67 * 10;
+const stackSize = 68 * 10;
 const stackDevider = 30;
-const middleSplitter = 0.8; // 5(!!) усреднений в массиве!!! [1, 2, 3, 4, 8] расчет от ПЕРВИЧНОЙ цены!
-const fixingIncomeValue = 1.0026;
+const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
+const fixingIncomeValue = 1.003;
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////
@@ -51,6 +50,7 @@ const getRates = async () => {
   } catch (e) {
     console.log("ERROR! Server not tesponsing!");
     lastPrice = bufferPrice;
+    sendErrorMessage({coin: coinName, error: 'По пизде пошла малина!'})
     return lastPrice;
   }
 };
