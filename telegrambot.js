@@ -16,18 +16,33 @@ const bot = new TelegramBot(token, { polling: false });
 const sendBot = (message) => {
   let mes = message;
 
-  const tier = mes.tier === 'Start' ? 'Закупка.' : `${mes.tier}`;
+  const tier = mes.tier === "Start" ? "Закупка." : `${mes.tier}`;
   chatIds.forEach(async (chatId) => {
     bot.sendMessage(
       chatId,
       `
 --------------------
 ${tier}
-${mes.operation} ${mes.qnt} ${mes.coin} по цене $${mes.price} на $${mes.summ.toFixed(2)}
+${mes.operation} ${mes.qnt} ${mes.coin} по цене $${
+        mes.price
+      } на $${mes.summ.toFixed(2)}
 --------------------
       `
     );
   });
 };
 
-module.exports = { sendBot };
+const sendErrorMessage = (error) => {
+  let mes = error;
+
+  chatIds.forEach(async (chatId) => {
+    bot.sendMessage(chatId, `${mes.coin} вышел из чата. ${mes.error}`);
+  });
+};
+
+// const error = {
+//   coin: '',
+//   error: 'Шеф, всё пропало!',
+// }
+
+module.exports = { sendBot, sendErrorMessage };
