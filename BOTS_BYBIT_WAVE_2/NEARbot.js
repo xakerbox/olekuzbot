@@ -9,7 +9,7 @@ const { sendBot, sendErrorMessage } = require("../telegrambot")
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = '1INCHUSDT';
+const coinName = 'NEARUSDT';
 const stackSize = 68 * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
