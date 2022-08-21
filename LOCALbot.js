@@ -2,19 +2,21 @@ const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("./cleanCalc");
 const format = require("date-fns/format");
 const { buyCoins } = require("./hashing");
-const { sendBot } = require("./telegrambot")
-
-
+const { sendBot, sendErrorMessage } = require("./telegrambot");
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = 'LOCAL_DOLLAR';
-const stackSize = 10 * 10;
+const coinName = "LOCAL TEST NO PANIC";
+const stackSize = 68 * 10;
 const stackDevider = 30;
-const middleSplitter = 0.75;
-const fixingIncomeValue = 1.0026;
+const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
+const fixingIncomeValue = 1.003;
+
+const secondBuyPause = 5; // seconds from last sell
+const thirdBuyPause = 30; //seconds from last sell
+const fourthBuyPause = 90; //seconds
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////
@@ -22,10 +24,10 @@ const fixingIncomeValue = 1.0026;
 const baseUrl =
   "https://testnet.binancefuture.com/fapi/v1/ticker/price?symbol=";
 
-const testUrl = "http://192.168.68.105:2345/put-rates";
+// const testUrl = "http://192.168.68.105:2345/put-rates";
+const testUrl = "http://localhost:2345/put-rates";
 
-// const BYBIT_URL_GET_RATES =
-//   `https://api.bybit.com/v2/public/tickers?symbol=${coinName}`; // ByBit prod endpoint
+const BYBIT_URL_GET_RATES = `https://api.bybit.com/v2/public/tickers?symbol=${coinName}`; // ByBit prod endpoint
 
 let lastPrice = 0;
 let zakupka = 0;
@@ -35,43 +37,40 @@ let spendedOnFirstBuy;
 
 let bufferPrice = 0.0705; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
 
+let sendMessageTrigger = 1;
+let tier = "Start";
+let coinsQntMessage = 0;
+let timeFromLastSell = 0;
+let timeFromLastSellBuffer;
+let timeEndBuffer;
+
 const getRates = async () => {
   try {
     // const { data: response } = await axios.get(`${baseUrl}${symbol}`);
     const { data: response } = await axios.get(testUrl); // Local test endpoint
     // const { data: response } = await axios.get(BYBIT_URL_GET_RATES); // ByBit Prod Get Rates
-    // lastPrice = +response.result[0].last_price;                      // ByBit Prod Get Rates
-    // bufferPrice = +response.result[0].last_price;                    // ByBit Prod Get Rates
+    // lastPrice = +response.result[0].last_price; // ByBit Prod Get Rates
+    // bufferPrice = +response.result[0].last_price; // ByBit Prod Get Rates
 
-    console.log(lastPrice);
-    lastPrice = response.price;
-    bufferPrice = response.price;
-    return response.price;
-    // return +response.result[0].last_price                            // ByBit Prod endpoint
+    console.log(lastPrice); // Local Test
+    lastPrice = response.price; // Local Test
+    bufferPrice = response.price; // Local Test
+    return response.price; // Local Test
+    // return +response.result[0].last_price; // ByBit Prod endpoint
   } catch (e) {
-    console.log("ERROR! Server not tesponsing!");
+    console.log("ERROR! Server not responsing!");
     lastPrice = bufferPrice;
+    sendErrorMessage({ coin: coinName, error: "По пизде пошла малина!" });
     return lastPrice;
   }
 };
 
-const startTrade = async (coinsBuyQnt, tier) => {
+const startTrade = async (coinsBuyQnt) => {
   if (startCounter === 0) {
     const startPrice = await getRates();
-    // await buyCoins(coinsBuyQnt, coinName, 'Buy')                    // ByBit Prod endpoint
+    // await buyCoins(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
     spendedOnFirstBuy = coinsBuyQnt * startPrice;
     startCounter = 1;
-
-    let message = {
-      operation: 'Куплено',
-      coin: coinName,
-      qnt: coinsBuyQnt,
-      price: startPrice,
-      summ: spendedOnFirstBuy,
-      tier,
-    }
-
-    sendBot(message);
   }
 
   return spendedOnFirstBuy;
@@ -93,16 +92,109 @@ let binanceFeeOnBuy;
 let awaitedPriceOnSell;
 let averagePrice;
 
+let sellCounter = 0;
+
 (async function main() {
   setInterval(async () => {
     const currentTime = format(new Date(), "dd MMMM kk:mm:ss");
 
     const currentPrice = await getRates();
+
+    console.log("ВРЕМЯ ПЕРВОЙ ПОКУПКИ:", Date.now() - timeFromLastSell);
+    console.log("ВРЕМЯ ВТОРОЙ:", Date.now() - timeFromLastSellBuffer);
+    console.log("ВРЕМЯ ТРЕТЬЕЙ", Date.now() - timeEndBuffer);
+
+    console.log("ПРОДАЖНИК:", sellCounter);
+
+    if (
+      Date.now() - timeFromLastSell < secondBuyPause * 1000 &&
+      sellCounter === 1
+    ) {
+      console.log(
+        "Секунд до старта: <10000",
+        secondBuyPause - (Date.now() - timeFromLastSell)
+      ) / 1000;
+      timeFromLastSellBuffer = timeFromLastSell;
+      console.log("ТРИГГЕР:", sellCounter);
+      return;
+    }
+
+    if (
+      Date.now() - timeFromLastSellBuffer > secondBuyPause * 1000 &&
+      sellCounter === 1
+    ) {
+      console.log(
+        "Секунд до старта:>10000",
+        secondBuyPause - (Date.now() - timeFromLastSell)
+      ) / 1000;
+      // timeFromLastSellBuffer = timeFromLastSell;
+      console.log("ТРИГГЕР:", sellCounter);
+      zeroBuyCounter === 0;
+    }
+
+    if (
+      Date.now() - timeFromLastSellBuffer < thirdBuyPause * 1000 &&
+      sellCounter === 2
+    ) {
+      console.log(
+        "Секунд до старта:",
+        thirdBuyPause - (Date.now() - timeFromLastSell)
+      ) / 1000;
+      timeEndBuffer = timeFromLastSellBuffer;
+      return;
+    }
+
+    if (
+      Date.now() - timeFromLastSellBuffer > thirdBuyPause * 1000 &&
+      sellCounter === 2
+    ) {
+      console.log(
+        "Секунд до старта:",
+        thirdBuyPause - (Date.now() - timeFromLastSell)
+      ) / 1000;
+      timeEndBuffer = timeFromLastSellBuffer;
+      zeroBuyCounter === 0;
+    }
+
+    if (
+      Date.now() - timeEndBuffer < fourthBuyPause * 1000 &&
+      sellCounter === 3
+    ) {
+      console.log(
+        "Секунд до старта:",
+        fourthBuyPause - (Date.now() - timeFromLastSell)
+      ) / 1000;
+      return;
+    }
+
+    if (
+      Date.now() - timeEndBuffer > fourthBuyPause * 1000 &&
+      sellCounter === 3
+    ) {
+      console.log(
+        "Секунд до старта:",
+        fourthBuyPause - (Date.now() - timeFromLastSell)
+      ) / 1000;
+      timeEndBuffer = 0;
+      timeFromLastSellBuffer = 0;
+      sellCounter = 0;
+      zeroBuyCounter === 0;
+    }
+
     if (zeroBuyCounter === 0) {
       coinsPrices = await buyPriceValues(+currentPrice, middleSplitter);
-      coinsQuantity = await countStartCoinsValue(coinsPrices, stackSize, stackDevider);
-      spentMoney[0] = await startTrade(coinsQuantity[0], 'Start');
-      spentMoney[0] = Math.round(spentMoney[0]*100000)/100000;
+      coinsQuantity = await countStartCoinsValue(
+        coinsPrices,
+        stackSize,
+        stackDevider
+      );
+
+      spentMoney[0] = await startTrade(
+        coinsQuantity[0],
+        "Start",
+        currentPrice * fixingIncomeValue
+      );
+      spentMoney[0] = Math.round(spentMoney[0] * 100000) / 100000;
       currentTier[0] = 1;
       zeroBuyCounter = 1;
       zakupka += 1;
@@ -113,6 +205,7 @@ let averagePrice;
       binanceFeeOnBuy = 0;
       awaitedPriceOnSell = 0;
       averagePrice = 0;
+      coinsQntMessage = coinsQuantity[0];
     }
     console.log(`======COIN ====> ${coinName} <=======COIN=======`);
     console.log("Цены усреднений:", JSON.stringify(coinsPrices));
@@ -120,27 +213,27 @@ let averagePrice;
 
     console.log(
       "0 averaging baught at price: ",
-      Math.round(spentMoney[0] / coinsQuantity[0]*100000)/100000
+      Math.round((spentMoney[0] / coinsQuantity[0]) * 100000) / 100000
     );
     console.log(
       "1 averaging baught at price: ",
-      Math.round(spentMoney[1] / coinsQuantity[1]*100000)/100000
+      Math.round((spentMoney[1] / coinsQuantity[1]) * 100000) / 100000
     );
     console.log(
       "2 averaging baught at price: ",
-      Math.round(spentMoney[2] / coinsQuantity[2]*100000)/100000
+      Math.round((spentMoney[2] / coinsQuantity[2]) * 100000) / 100000
     );
     console.log(
       "3 averaging baught at price: ",
-      Math.round(spentMoney[3] / coinsQuantity[3]*100000)/100000
+      Math.round((spentMoney[3] / coinsQuantity[3]) * 100000) / 100000
     );
     console.log(
       "4 averaging baught at price: ",
-      Math.round(spentMoney[4] / coinsQuantity[4]*100000)/100000
+      Math.round((spentMoney[4] / coinsQuantity[4]) * 100000) / 100000
     );
     console.log(
       "5 averaging baught at price: ",
-      Math.round(spentMoney[5] / coinsQuantity[5]*100000)/100000
+      Math.round((spentMoney[5] / coinsQuantity[5]) * 100000) / 100000
     );
 
     console.log("Summ of all baught coins: ", spentMoney);
@@ -163,10 +256,16 @@ let averagePrice;
       coinsQuantity[5] * currentTier[5];
 
     console.log("Quantity of bought coins:", quantityOfBoughtCoins);
-    console.log("Summ spent on buy all coins:", Math.round(summSpentOnAllCoins/100)*100);
+    console.log(
+      "Summ spent on buy all coins:",
+      Math.round(summSpentOnAllCoins / 100) * 100
+    );
 
     binanceFeeOnBuy = summSpentOnAllCoins * 0.0006;
-    console.log("Binance fee on BUY all coins:", Math.round(binanceFeeOnBuy*100000)/100000);
+    console.log(
+      "Binance fee on BUY all coins:",
+      Math.round(binanceFeeOnBuy * 100000) / 100000
+    );
 
     const actualValueOfStack =
       currentPrice *
@@ -193,7 +292,7 @@ let averagePrice;
         coinsQuantity[4] * currentTier[4] +
         coinsQuantity[5] * currentTier[5]);
 
-    console.log("Average price:", Math.round(averagePrice*100000)/100000);
+    console.log("Average price:", Math.round(averagePrice * 100000) / 100000);
 
     income =
       ((currentPrice * coinsQuantity[0] - spentMoney[0]) * currentTier[0] +
@@ -210,21 +309,41 @@ let averagePrice;
     console.log("Worked tiers: ", workedTiers);
     console.log("TIME NOW:", currentTime);
 
-    const profitablePrice = Math.round((averagePrice * fixingIncomeValue)*100000)/100000;
+    const profitablePrice =
+      Math.round(averagePrice * fixingIncomeValue * 100000) / 100000;
 
     console.log("Желаемый курс:", profitablePrice);
 
+    if (sendMessageTrigger === 1) {
+      let message = {
+        operation: "Куплено",
+        coin: coinName,
+        qnt: coinsQntMessage,
+        price: currentPrice,
+        summ: spendedOnFirstBuy,
+        tier,
+        profitPrice: profitablePrice,
+      };
+      sendBot(message);
+
+      sendMessageTrigger = 0;
+    }
+
     if (currentPrice >= profitablePrice) {
-      // await buyCoins(+quantityOfBoughtCoins, coinName, "Sell");        //  ByBit Prod endpoint
+      // await buyCoins(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
 
       let message = {
-        operation: 'Продано',
+        operation: "Продано",
         coin: coinName,
         qnt: quantityOfBoughtCoins,
         price: currentPrice,
-        summ: quantityOfBoughtCoins*currentPrice,
-        tier: 'Продажа.'
-      }
+        summ: quantityOfBoughtCoins * currentPrice,
+        tier: "Продажа.",
+        dirtyIncome: {
+          sellOn: quantityOfBoughtCoins * currentPrice,
+          boughtOn: summSpentOnAllCoins,
+        },
+      };
 
       sendBot(message);
 
@@ -266,55 +385,91 @@ let averagePrice;
 
       awaitedPriceOnSell = 0;
       quantityOfBoughtCoins = 0;
+
+      sellCounter += 1;
+      console.log("ТРИГГЕР ТАЙМЕРА:", sellCounter);
+      timeFromLastSell = Date.now();
+
+      sendMessageTrigger = 1;
+
+      tier = 'Start'
     }
 
     if (currentPrice <= coinsPrices[1] && currentTier[1] == 0) {
       startCounter = 0;
       currentTier[1] = 1;
-      spentMoney[1] = await startTrade(coinsQuantity[1], '1 усреднение');
-      spentMoney[1] = Math.round(spentMoney[1]*100000)/100000
+      spentMoney[1] = await startTrade(coinsQuantity[1]);
+      spentMoney[1] = Math.round(spentMoney[1] * 100000) / 100000;
       startCounter = 1;
       workedTiers[1] += 1;
-      return
+
+      coinsQntMessage = coinsQuantity[1];
+      sendMessageTrigger = 1;
+      tier = "1 усреднение";
+
+      return;
     }
 
     if (currentPrice <= coinsPrices[2] && currentTier[2] == 0) {
       startCounter = 0;
       currentTier[2] = 1;
-      spentMoney[2] = await startTrade(coinsQuantity[2], '2 усреднение');
-      spentMoney[2] = Math.round(spentMoney[2]*100000)/100000
+      spentMoney[2] = await startTrade(coinsQuantity[2]);
+      spentMoney[2] = Math.round(spentMoney[2] * 100000) / 100000;
       startCounter = 1;
       workedTiers[2] += 1;
-      return
+
+      coinsQntMessage = coinsQuantity[2];
+      sendMessageTrigger = 1;
+      tier = "2 усреднение";
+
+      return;
     }
 
     if (currentPrice <= coinsPrices[3] && currentTier[3] == 0) {
       startCounter = 0;
       currentTier[3] = 1;
-      spentMoney[3] = await startTrade(coinsQuantity[3], '3 усреднение');
-      spentMoney[3] = Math.round(spentMoney[3]*100000)/100000
+      spentMoney[3] = await startTrade(coinsQuantity[3]);
+      spentMoney[3] = Math.round(spentMoney[3] * 100000) / 100000;
       workedTiers[3] += 1;
-      return
+
+      coinsQntMessage = coinsQuantity[3];
+
+      sendMessageTrigger = 1;
+      tier = "3 усреднение";
+
+      return;
     }
 
     if (currentPrice <= coinsPrices[4] && currentTier[4] == 0) {
       startCounter = 0;
       currentTier[4] = 1;
-      spentMoney[4] = await startTrade(coinsQuantity[4], '4 усреднение');
-      spentMoney[4] = Math.round(spentMoney[4]*100000)/100000
+      spentMoney[4] = await startTrade(coinsQuantity[4]);
+      spentMoney[4] = Math.round(spentMoney[4] * 100000) / 100000;
       startCounter = 1;
       workedTiers[4] += 1;
-      return
+
+      coinsQntMessage = coinsQuantity[4];
+
+      sendMessageTrigger = 1;
+      tier = "4 усреднение";
+
+      return;
     }
 
     if (currentPrice <= coinsPrices[5] && currentTier[5] == 0) {
       startCounter = 0;
       currentTier[5] = 1;
-      spentMoney[5] = await startTrade(coinsQuantity[5], '5 усреднение');
-      spentMoney[5] = Math.round(spentMoney[5]*100000)/100000
+      spentMoney[5] = await startTrade(coinsQuantity[5]);
+      spentMoney[5] = Math.round(spentMoney[5] * 100000) / 100000;
       startCounter = 1;
       workedTiers[5] += 1;
-      return
+
+      coinsQntMessage = coinsQuantity[5];
+
+      sendMessageTrigger = 1;
+      tier = "5 усреднение";
+
+      return;
     }
-  }, 3000);
+  }, 2500);
 })();

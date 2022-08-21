@@ -3,8 +3,6 @@ const getWorkingSum = (totalMoney, workingPercent) => {
   return workMoney;
 };
 
-// SILLY UPDATE
-
 const buyPriceValues = async (startBuyPrice, percentDecreasing) => {
   let pricesToBuy = [startBuyPrice.toFixed(6)];
   let newPrice = startBuyPrice;
@@ -47,14 +45,4 @@ const countStartCoinsValue = async (
   return coinsQuantity;
 };
 
-// const getWorkingStacks = (totalMoney, stackQnt, workingPart) => {
-//   const everyStackValue = (0.5 * totalMoney) / stackQnt;
-//   return everyStackValue;
-// };
-
 module.exports = { buyPriceValues, countStartCoinsValue };
-
-// const pricesToBuy = buyPriceValues(startPrice=0.72, percentDecreasing=1);
-// const coinsQNT = countStartCoinsValue(pricesToBuy, 500, 30)
-// console.log('COUNTED PRICES TO BUY: ', pricesToBuy);
-// console.log('COINS QUANTITY: ', coinsQNT);

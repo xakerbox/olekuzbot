@@ -1,25 +1,26 @@
 const crypto = require("crypto");
 const axios = require("axios");
+require('dotenv').config();
 
-const BASE_URI_BUY_SELL = "https://api.bybit.com/private/linear/order/create?";
+const BASE_URI_BUY_SELL = process.env.BYBIT_BASE_URI_CREATE_ORDER
 
 const BASE_URI_SELL = "https://api.bybit.com/private/linear/order/cancel?";
 // const BASE_URI_WALLET = "https://api.bybit.com/v2/private/wallet/balance?";
 
-const api_key = "xtnMhAXlnpRWANdIQq";
-const secret = "dEAE8ElH7rhM3C2P9pMFkM8hvGaBCVx2Za1n";
+const api_key = process.env.BYBIT_API_KEY;
+const secret = process.env.BYBIT_SECRET_KEY;
 
 const hashingParams = (params) => {
   return crypto
-    .createHmac("sha256", "dEAE8ElH7rhM3C2P9pMFkM8hvGaBCVx2Za1n")
+    .createHmac("sha256", secret)
     .update(params)
     .digest("hex");
 };
 
-const getInfo = async () => {
-  const { data: result } = await axios.get(CORRECT_URI);
-  console.log("USDT Balance", result.result.USDT);
-};
+// const getInfo = async () => {
+//   const { data: result } = await axios.get(BASE_URI_WALLET);
+//   console.log("USDT Balance", result.result.USDT);
+// };
 
 const buyCoins = async (qntCoins, SYMBOL, operation) => {
   reduceParam = operation === "Buy" ? false : true;
@@ -36,7 +37,5 @@ const buyCoins = async (qntCoins, SYMBOL, operation) => {
   const { data: result } = await axios.post(URI);
   console.log("Status order:", result);
 };
-
-// buyCoins(1, "DOGEUSDT", "Sell")
 
 module.exports = { buyCoins };
