@@ -1,7 +1,7 @@
 const TelegramBot = require("node-telegram-bot-api");
 
 const token = "5405704788:AAFFoHQJj_st8Lyo3ufi6Eo-bBulirLN3sA";
-const chatIds = [165564370, ]; // 535043367
+const chatIds = [165564370, 535043367]; // 535043367
 const bot = new TelegramBot(token, { polling: false });
 
 // const message = {
