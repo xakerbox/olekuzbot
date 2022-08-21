@@ -27,7 +27,7 @@ const baseUrl =
 // const testUrl = "http://192.168.68.105:2345/put-rates";
 const testUrl = "http://localhost:2345/put-rates";
 
-const BYBIT_URL_GET_RATES = `https://api.bybit.com/v2/public/tickers?symbol=${coinName}`; // ByBit prod endpoint
+const BYBIT_URL_GET_RATES = `${process.env.BYBIT_BASE_URI_GET_RATES}${coinName}`; // ByBit prod endpoint
 
 let lastPrice = 0;
 let zakupka = 0;
