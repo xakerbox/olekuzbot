@@ -1,10 +1,11 @@
 const crypto = require("crypto");
 const axios = require("axios");
-require('dotenv').config();
+require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
 
 const BASE_URI_BUY_SELL = process.env.BYBIT_BASE_URI_CREATE_ORDER
+console.log('BASE_URI', BASE_URI_BUY_SELL)
 
-const BASE_URI_SELL = "https://api.bybit.com/private/linear/order/cancel?";
+// const BASE_URI_SELL = "https://api.bybit.com/private/linear/order/cancel?";
 // const BASE_URI_WALLET = "https://api.bybit.com/v2/private/wallet/balance?";
 
 const api_key = process.env.BYBIT_API_KEY;
