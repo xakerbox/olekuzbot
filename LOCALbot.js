@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("./cleanCalc");
 const format = require("date-fns/format");
-const { buyCoins } = require("./hashing");
+const { orderBybit, orderBinance } = require("./hashing");
 const { sendBot, sendErrorMessage } = require("./telegrambot");
 //////////////////////////////////////////////
 //////////////////////////////////////////////
