@@ -45,4 +45,5 @@ const countStartCoinsValue = async (
   return coinsQuantity;
 };
 
+
 module.exports = { buyPriceValues, countStartCoinsValue };

@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const axios = require("axios");
-// require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
-require("dotenv").config();
+require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
+// require("dotenv").config();
 const Binance = require("node-binance-api");
 
 const bybit_api_key = process.env.BYBIT_API_KEY;
@@ -47,7 +47,5 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
     ? console.info(await binance.futuresMarketBuy(SYMBOL, qntCoins))
     : console.info(await binance.futuresMarketSell(SYMBOL, qntCoins));
 };
-
-orderBinance(23, "CHZUSDT", "Sell");
 
 module.exports = { orderBybit, orderBinance };
