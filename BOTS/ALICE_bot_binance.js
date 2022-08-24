@@ -1,16 +1,17 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { orderBybit } = require("../hashing");
+const { orderBybit, orderBinance } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
 require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
+
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "TRXUSDT";
-const stackSize = 70 * 10;
+const coinName = "ALICEUSDT";
+const stackSize = 67 * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
 const fixingIncomeValue = 1.003;
@@ -29,6 +30,7 @@ const baseUrl =
 const testUrl = "http://localhost:2345/put-rates";
 
 const BYBIT_URL_GET_RATES = `${process.env.BYBIT_BASE_URI_GET_RATES}${coinName}`; // ByBit prod endpoint
+const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
 
 let lastPrice = 0;
 let zakupka = 0;
@@ -47,17 +49,25 @@ let timeEndBuffer;
 
 const getRates = async () => {
   try {
-    // const { data: response } = await axios.get(`${baseUrl}${symbol}`);
     // const { data: response } = await axios.get(testUrl); // Local test endpoint
-    const { data: response } = await axios.get(BYBIT_URL_GET_RATES); // ByBit Prod Get Rates
-    lastPrice = +response.result[0].last_price; // ByBit Prod Get Rates
-    bufferPrice = +response.result[0].last_price; // ByBit Prod Get Rates
+
+    // const { data: response } = await axios.get(BYBIT_URL_GET_RATES); // ByBit Prod Get Rates
+    // lastPrice = +response.result[0].last_price; // ByBit Prod Get Rates
+    // bufferPrice = +response.result[0].last_price; // ByBit Prod Get Rates
+
+    const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
+
+    console.log('NEW RESPONSE', response);
+    lastPrice = +response.price; // Binance Prod Get Rates
+    bufferPrice = +response.price; // Binance Prod Get Rates
 
     // console.log(lastPrice); // Local Test
     // lastPrice = response.price; // Local Test
     // bufferPrice = response.price; // Local Test
     // return response.price; // Local Test
-    return +response.result[0].last_price; // ByBit Prod endpoint
+
+    // return +response.result[0].last_price; // ByBit Prod endpoint
+    return +response.price;
   } catch (e) {
     console.log("ERROR! Server not responsing!");
     lastPrice = bufferPrice;
@@ -69,7 +79,11 @@ const getRates = async () => {
 const startTrade = async (coinsBuyQnt) => {
   if (startCounter === 0) {
     const startPrice = await getRates();
-    await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
+    console.log('Start price on buy',startPrice)
+
+    // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
+    await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+
     spendedOnFirstBuy = coinsBuyQnt * startPrice;
     startCounter = 1;
   }
@@ -331,8 +345,8 @@ let sellCounter = 0;
     }
 
     if (currentPrice >= profitablePrice) {
-      await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
-
+      // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
+      await orderBinance(+quantityOfBoughtCoins, coinName, "Sell"); // Binance Prod endpoint
       let message = {
         operation: "Продано",
         coin: coinName,
@@ -393,7 +407,7 @@ let sellCounter = 0;
 
       sendMessageTrigger = 1;
 
-      tier = 'Start'
+      tier = "Start";
     }
 
     if (currentPrice <= coinsPrices[1] && currentTier[1] == 0) {
