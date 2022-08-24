@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const axios = require("axios");
-require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
-// require("dotenv").config();
+// require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
+require("dotenv").config();
 const Binance = require("node-binance-api");
 
 const bybit_api_key = process.env.BYBIT_API_KEY;
@@ -43,9 +43,30 @@ const orderBybit = async (qntCoins, SYMBOL, operation) => {
 };
 
 const orderBinance = async (qntCoins, SYMBOL, operation) => {
-  operation === "Buy"
-    ? console.info(await binance.futuresMarketBuy(SYMBOL, qntCoins))
-    : console.info(await binance.futuresMarketSell(SYMBOL, qntCoins));
+  if (operation === "Buy") {
+    const { orderId } = await binance.futuresMarketBuy(SYMBOL, qntCoins);
+    return orderId;
+  }
+
+  if (operation === "Sell") {
+    const avgPrice  = await binance.futuresMarketBuy(SYMBOL, qntCoins);
+    return result
+  }
+
+  // operation === "Buy"
+  //   ? console.info(await binance.futuresMarketBuy(SYMBOL, qntCoins))
+  //   : console.info(await binance.futuresMarketSell(SYMBOL, qntCoins));
 };
 
-module.exports = { orderBybit, orderBinance };
+const checkOrderStatus = async (SYMBOL, orderId) => {
+  const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
+    orderId,
+  });
+  return avgPrice;
+};
+
+// checkOrderStatus("CHZUSDT", 6652895749);
+
+// orderBinance(21, "CHZUSDT", "Buy");
+
+module.exports = { orderBybit, orderBinance, checkOrderStatus };

@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { orderBybit, orderBinance } = require("../hashing");
+const { orderBybit, orderBinance, checkOrderStatus } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
 require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
 
@@ -80,12 +80,22 @@ const getRates = async () => {
 const startTrade = async (coinsBuyQnt) => {
   if (startCounter === 0) {
     const startPrice = await getRates();
-    console.log('Start price on buy',startPrice)
+    console.log('Start price on buy', startPrice)
 
     // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
-    await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+    const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+    const realOrderPrice = await checkOrderStatus(coinName, orderId)
 
-    spendedOnFirstBuy = coinsBuyQnt * startPrice;
+    console.log('Real order price: ', realOrderPrice);
+
+    coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
+    coinsQuantity = await countStartCoinsValue(
+      coinsPrices,
+      stackSize,
+      stackDevider
+    );
+
+    spendedOnFirstBuy = coinsBuyQnt * realOrderPrice;
     startCounter = 1;
   }
 
