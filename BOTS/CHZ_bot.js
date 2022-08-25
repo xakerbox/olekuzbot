@@ -244,7 +244,7 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Будет куплено монет: ", coinsQuantity);
 
     spentMoney.forEach((summ, index) => {
-      console.log(`${index - 1} average price: ${Math.round((summ/coinsQuantity[i]*100000)/100000)}`);
+      console.log(`${index} average price: ${Math.round((summ/coinsQuantity[index]*100000)/100000)}`);
     })
 
     console.log("Summ of all baught coins: ", spentMoney);
