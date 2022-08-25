@@ -12,12 +12,12 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ADAUSDT";
-let stackValue = 70;
+const coinName = "C98USDT";
+let stackValue = 36;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
-const fixingIncomeValue = 1.0035;
+const middleSplitter = [0.2, 0.4, 0.6, 0.8, 1];
+const fixingIncomeValue = 1.0021;
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -106,9 +106,10 @@ const startTrade = async (coinsBuyQnt) => {
 
     // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
     const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+    console.log(orderId);
     const realOrderPrice = await checkOrderStatus(coinName, orderId);
 
-    priceToSell = realOrderPrice;
+    priceToSell = await getAverageOnPosition(coinName);
 
     console.log("Real order price: ", realOrderPrice);
 
@@ -286,7 +287,7 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Worked tiers: ", workedTiers);
     console.log("TIME NOW:", currentTime);
 
-    console.log("Желаемый курс:", priceToSell);
+    console.log("Желаемый курс:", +priceToSell*fixingIncomeValue);
 
     if (sendMessageTrigger === 1) {
       let message = {
@@ -303,7 +304,10 @@ const startTrade = async (coinsBuyQnt) => {
       sendMessageTrigger = 0;
     }
 
-    if (currentPrice >= priceToSell * fixingIncomeValue) {
+    const ourWillingPrice = +priceToSell * fixingIncomeValue;
+    console.log('PRICE FOR SELL:', ourWillingPrice);
+
+    if (currentPrice >= ourWillingPrice) {
       // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
       await orderBinance(+quantityOfBoughtCoins, coinName, "Sell"); // Binance Prod endpoint
       let message = {
@@ -340,6 +344,8 @@ const startTrade = async (coinsBuyQnt) => {
       sendMessageTrigger = 1;
 
       tier = "Start";
+
+      return
     }
 
     if (currentPrice <= coinsPrices[1] && currentTier[1] == 0) {

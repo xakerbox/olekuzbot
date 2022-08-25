@@ -89,42 +89,26 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
 };
 
 const checkOrderStatus = async (SYMBOL, orderId) => {
-  const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
+  // const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
+  //   orderId,
+  // });
+  const resp = await binance.futuresOrderStatus(SYMBOL, {
     orderId,
   });
-  console.log(avgPrice);
-  return avgPrice;
+
+  console.log(resp);
+  // return avgPrice;
 };
 
-// const getIncome = async () => {
-//   const res = await binance.futuresIncome();
-//   let mapper = res.filter(
-//     (el) =>
-//       el.symbol === "MATICUSDT" ||
-//       el.symbol === "KAVAUSDT" ||
-//       el.symbol === "ALICEUSDT" ||
-//       el.symbol === "CHZUSDT"
-//   );
+const getAverageOnPosition = async (symbol) => {
+  const { positions } = await binance.futuresAccount();
+  const resultResponse = positions.filter((el) => el.symbol === symbol);
 
-//   mapper = mapper.map((el) => {
-//     fs.appendFileSync(
-//       "./alltransactions.txt",
-//       `Coin: ${el.symbol}, Income: ${+el.income}\n`
-//     );
+  const avrPrice = +resultResponse[0].entryPrice;
 
-//     return {
-//       symbol: el.symbol,
-//       income: +el.income,
-//     };
-//   });
+  return avrPrice;
+};
 
-//   const totalIncome = mapper.reduce((acc, curr) => {
-//     return acc + curr.income;
-//   }, 0);
-
-//   console.log(totalIncome);
-// };
-
-checkOrderStatus("MATICUSDT", 19675292808);
+// checkOrderStatus("ADAUSDT", 24139130591);
 // orderBinance(21, "CHZUSDT", "Buy");
-module.exports = { orderBybit, orderBinance, checkOrderStatus };
+module.exports = { orderBybit, orderBinance, checkOrderStatus, getAverageOnPosition };
