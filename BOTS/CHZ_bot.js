@@ -19,9 +19,9 @@ const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
 const fixingIncomeValue = 1.0035;
 
-const secondBuyPause = 5; // seconds from last sell
-const thirdBuyPause = 30; //seconds from last sell
-const fourthBuyPause = 90; //seconds
+// const secondBuyPause = 5; // seconds from last sell
+// const thirdBuyPause = 30; //seconds from last sell
+// const fourthBuyPause = 90; //seconds
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////
@@ -49,6 +49,24 @@ let coinsQntMessage = 0;
 let timeFromLastSell = 0;
 let timeFromLastSellBuffer;
 let timeEndBuffer;
+
+let spentMoney = [0, 0, 0, 0, 0, 0];
+
+let totalIncome = 0;
+let coinsPrices;
+let coinsQuantity;
+let zeroBuyCounter = 0;
+let currentTier = [1, 0, 0, 0, 0, 0];
+
+let workedTiers = [0, 0, 0, 0, 0, 0];
+
+let summSpentOnAllCoins;
+let quantityOfBoughtCoins;
+let binanceFeeOnBuy;
+let awaitedPriceOnSell;
+let averagePrice;
+
+let sellCounter = 0;
 
 const getRates = async () => {
   try {
@@ -90,12 +108,14 @@ const startTrade = async (coinsBuyQnt) => {
 
     console.log("Real order price: ", realOrderPrice);
 
-    coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
-    coinsQuantity = await countStartCoinsValue(
-      coinsPrices,
-      stackSize,
-      stackDevider
-    );
+    if (currentTier[1] === 0) {
+      coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
+      coinsQuantity = await countStartCoinsValue(
+        coinsPrices,
+        stackSize,
+        stackDevider
+      );
+    }
 
     spendedOnFirstBuy = coinsBuyQnt * realOrderPrice;
     startCounter = 1;
@@ -104,23 +124,7 @@ const startTrade = async (coinsBuyQnt) => {
   return spendedOnFirstBuy;
 };
 
-let spentMoney = [0, 0, 0, 0, 0, 0];
 
-let totalIncome = 0;
-let coinsPrices;
-let coinsQuantity;
-let zeroBuyCounter = 0;
-let currentTier = [1, 0, 0, 0, 0, 0];
-
-let workedTiers = [0, 0, 0, 0, 0, 0];
-
-let summSpentOnAllCoins;
-let quantityOfBoughtCoins;
-let binanceFeeOnBuy;
-let awaitedPriceOnSell;
-let averagePrice;
-
-let sellCounter = 0;
 
 (async function main() {
   setInterval(async () => {
@@ -128,86 +132,85 @@ let sellCounter = 0;
 
     const currentPrice = await getRates();
 
-    console.log("ВРЕМЯ ПЕРВОЙ ПОКУПКИ:", Date.now() - timeFromLastSell);
-    console.log("ВРЕМЯ ВТОРОЙ:", Date.now() - timeFromLastSellBuffer);
-    console.log("ВРЕМЯ ТРЕТЬЕЙ", Date.now() - timeEndBuffer);
+    // console.log("ВРЕМЯ ПЕРВОЙ ПОКУПКИ:", Date.now() - timeFromLastSell);
+    // console.log("ВРЕМЯ ВТОРОЙ:", Date.now() - timeFromLastSellBuffer);
+    // console.log("ВРЕМЯ ТРЕТЬЕЙ", Date.now() - timeEndBuffer);
+    // console.log("ПРОДАЖНИК:", sellCounter);
 
-    console.log("ПРОДАЖНИК:", sellCounter);
+    // if (
+    //   Date.now() - timeFromLastSell < secondBuyPause * 1000 &&
+    //   sellCounter === 1
+    // ) {
+    //   console.log(
+    //     "Секунд до старта: <10000",
+    //     secondBuyPause - (Date.now() - timeFromLastSell)
+    //   ) / 1000;
+    //   timeFromLastSellBuffer = timeFromLastSell;
+    //   console.log("ТРИГГЕР:", sellCounter);
+    //   return;
+    // }
 
-    if (
-      Date.now() - timeFromLastSell < secondBuyPause * 1000 &&
-      sellCounter === 1
-    ) {
-      console.log(
-        "Секунд до старта: <10000",
-        secondBuyPause - (Date.now() - timeFromLastSell)
-      ) / 1000;
-      timeFromLastSellBuffer = timeFromLastSell;
-      console.log("ТРИГГЕР:", sellCounter);
-      return;
-    }
+    // if (
+    //   Date.now() - timeFromLastSellBuffer > secondBuyPause * 1000 &&
+    //   sellCounter === 1
+    // ) {
+    //   console.log(
+    //     "Секунд до старта:>10000",
+    //     secondBuyPause - (Date.now() - timeFromLastSell)
+    //   ) / 1000;
+    //   // timeFromLastSellBuffer = timeFromLastSell;
+    //   console.log("ТРИГГЕР:", sellCounter);
+    //   zeroBuyCounter === 0;
+    // }
 
-    if (
-      Date.now() - timeFromLastSellBuffer > secondBuyPause * 1000 &&
-      sellCounter === 1
-    ) {
-      console.log(
-        "Секунд до старта:>10000",
-        secondBuyPause - (Date.now() - timeFromLastSell)
-      ) / 1000;
-      // timeFromLastSellBuffer = timeFromLastSell;
-      console.log("ТРИГГЕР:", sellCounter);
-      zeroBuyCounter === 0;
-    }
+    // if (
+    //   Date.now() - timeFromLastSellBuffer < thirdBuyPause * 1000 &&
+    //   sellCounter === 2
+    // ) {
+    //   console.log(
+    //     "Секунд до старта:",
+    //     thirdBuyPause - (Date.now() - timeFromLastSell)
+    //   ) / 1000;
+    //   timeEndBuffer = timeFromLastSellBuffer;
+    //   return;
+    // }
 
-    if (
-      Date.now() - timeFromLastSellBuffer < thirdBuyPause * 1000 &&
-      sellCounter === 2
-    ) {
-      console.log(
-        "Секунд до старта:",
-        thirdBuyPause - (Date.now() - timeFromLastSell)
-      ) / 1000;
-      timeEndBuffer = timeFromLastSellBuffer;
-      return;
-    }
+    // if (
+    //   Date.now() - timeFromLastSellBuffer > thirdBuyPause * 1000 &&
+    //   sellCounter === 2
+    // ) {
+    //   console.log(
+    //     "Секунд до старта:",
+    //     thirdBuyPause - (Date.now() - timeFromLastSell)
+    //   ) / 1000;
+    //   timeEndBuffer = timeFromLastSellBuffer;
+    //   zeroBuyCounter === 0;
+    // }
 
-    if (
-      Date.now() - timeFromLastSellBuffer > thirdBuyPause * 1000 &&
-      sellCounter === 2
-    ) {
-      console.log(
-        "Секунд до старта:",
-        thirdBuyPause - (Date.now() - timeFromLastSell)
-      ) / 1000;
-      timeEndBuffer = timeFromLastSellBuffer;
-      zeroBuyCounter === 0;
-    }
+    // if (
+    //   Date.now() - timeEndBuffer < fourthBuyPause * 1000 &&
+    //   sellCounter === 3
+    // ) {
+    //   console.log(
+    //     "Секунд до старта:",
+    //     fourthBuyPause - (Date.now() - timeFromLastSell)
+    //   ) / 1000;
+    //   return;
+    // }
 
-    if (
-      Date.now() - timeEndBuffer < fourthBuyPause * 1000 &&
-      sellCounter === 3
-    ) {
-      console.log(
-        "Секунд до старта:",
-        fourthBuyPause - (Date.now() - timeFromLastSell)
-      ) / 1000;
-      return;
-    }
-
-    if (
-      Date.now() - timeEndBuffer > fourthBuyPause * 1000 &&
-      sellCounter === 3
-    ) {
-      console.log(
-        "Секунд до старта:",
-        fourthBuyPause - (Date.now() - timeFromLastSell)
-      ) / 1000;
-      timeEndBuffer = 0;
-      timeFromLastSellBuffer = 0;
-      sellCounter = 0;
-      zeroBuyCounter === 0;
-    }
+    // if (
+    //   Date.now() - timeEndBuffer > fourthBuyPause * 1000 &&
+    //   sellCounter === 3
+    // ) {
+    //   console.log(
+    //     "Секунд до старта:",
+    //     fourthBuyPause - (Date.now() - timeFromLastSell)
+    //   ) / 1000;
+    //   timeEndBuffer = 0;
+    //   timeFromLastSellBuffer = 0;
+    //   sellCounter = 0;
+    //   zeroBuyCounter === 0;
+    // }
 
     if (zeroBuyCounter === 0) {
       coinsPrices = await buyPriceValues(+currentPrice, middleSplitter);
@@ -240,30 +243,9 @@ let sellCounter = 0;
     console.log("Цены усреднений:", JSON.stringify(coinsPrices));
     console.log("Будет куплено монет: ", coinsQuantity);
 
-    console.log(
-      "0 averaging baught at price: ",
-      Math.round((spentMoney[0] / coinsQuantity[0]) * 100000) / 100000
-    );
-    console.log(
-      "1 averaging baught at price: ",
-      Math.round((spentMoney[1] / coinsQuantity[1]) * 100000) / 100000
-    );
-    console.log(
-      "2 averaging baught at price: ",
-      Math.round((spentMoney[2] / coinsQuantity[2]) * 100000) / 100000
-    );
-    console.log(
-      "3 averaging baught at price: ",
-      Math.round((spentMoney[3] / coinsQuantity[3]) * 100000) / 100000
-    );
-    console.log(
-      "4 averaging baught at price: ",
-      Math.round((spentMoney[4] / coinsQuantity[4]) * 100000) / 100000
-    );
-    console.log(
-      "5 averaging baught at price: ",
-      Math.round((spentMoney[5] / coinsQuantity[5]) * 100000) / 100000
-    );
+    spentMoney.forEach((summ, index) => {
+      console.log(`${index - 1} average price: ${Math.round((summ/coinsQuantity[i]*100000)/100000)}`);
+    })
 
     console.log("Summ of all baught coins: ", spentMoney);
     console.log("Current price: $", parseFloat(currentPrice));
@@ -282,12 +264,6 @@ let sellCounter = 0;
       Math.round(summSpentOnAllCoins / 100) * 100
     );
 
-    binanceFeeOnBuy = summSpentOnAllCoins * 0.0006;
-    console.log(
-      "Binance fee on BUY all coins:",
-      Math.round(binanceFeeOnBuy * 100000) / 100000
-    );
-
     actualValueOfStack =
       currentPrice *
       coinsQuantity.reduce((acc, cur, index) => acc + cur * currentTier[index]);
@@ -301,16 +277,6 @@ let sellCounter = 0;
       );
 
     console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000);
-
-    income =
-      ((currentPrice * coinsQuantity[0] - spentMoney[0]) * currentTier[0] +
-        (currentPrice * coinsQuantity[1] - spentMoney[1]) * currentTier[1] +
-        (currentPrice * coinsQuantity[2] - spentMoney[2]) * currentTier[2] +
-        (currentPrice * coinsQuantity[3] - spentMoney[3]) * currentTier[3] +
-        (currentPrice * coinsQuantity[4] - spentMoney[4]) * currentTier[4] +
-        (currentPrice * coinsQuantity[5] - spentMoney[5]) * currentTier[5]) /
-      10;
-    console.log("Income on this tier: ", income);
 
     console.log("Total income: ", totalIncome);
     console.log("Total buys: ", zakupka, "\n");
@@ -359,10 +325,10 @@ let sellCounter = 0;
       startCounter = 0;
       zeroBuyCounter = 0;
 
-      spentMoney = spentMoney.map(spnt => spnt = 0)
-      currentTier = currentTier.map(tier => tier = 0)
-      coinsQuantity = coinsQuantity.map(qnt => qnt = 0);
-      coinsPrices = coinsPrices.map(price => price = 0)
+      spentMoney = spentMoney.map((spnt) => {spnt = 0})
+      currentTier = currentTier.map((tier) => {tier = 0})
+      coinsQuantity = coinsQuantity.map((qnt) => {qnt = 0});
+      coinsPrices = coinsPrices.map((price) => {price = 0})
 
       awaitedPriceOnSell = 0;
       quantityOfBoughtCoins = 0;
