@@ -3,7 +3,7 @@ const axios = require("axios");
 require("dotenv").config({
   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
 });
-// require("dotenv").config();
+// require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
@@ -92,38 +92,39 @@ const checkOrderStatus = async (SYMBOL, orderId) => {
   const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
     orderId,
   });
+  console.log(avgPrice);
   return avgPrice;
 };
 
-const getIncome = async () => {
-  const res = await binance.futuresIncome();
-  let mapper = res.filter(
-    (el) =>
-      el.symbol === "MATICUSDT" ||
-      el.symbol === "KAVAUSDT" ||
-      el.symbol === "ALICEUSDT" ||
-      el.symbol === "CHZUSDT"
-  );
+// const getIncome = async () => {
+//   const res = await binance.futuresIncome();
+//   let mapper = res.filter(
+//     (el) =>
+//       el.symbol === "MATICUSDT" ||
+//       el.symbol === "KAVAUSDT" ||
+//       el.symbol === "ALICEUSDT" ||
+//       el.symbol === "CHZUSDT"
+//   );
 
-  mapper = mapper.map((el) => {
-    fs.appendFileSync(
-      "./alltransactions.txt",
-      `Coin: ${el.symbol}, Income: ${+el.income}\n`
-    );
+//   mapper = mapper.map((el) => {
+//     fs.appendFileSync(
+//       "./alltransactions.txt",
+//       `Coin: ${el.symbol}, Income: ${+el.income}\n`
+//     );
 
-    return {
-      symbol: el.symbol,
-      income: +el.income,
-    };
-  });
+//     return {
+//       symbol: el.symbol,
+//       income: +el.income,
+//     };
+//   });
 
-  const totalIncome = mapper.reduce((acc, curr) => {
-    return acc + curr.income;
-  }, 0);
+//   const totalIncome = mapper.reduce((acc, curr) => {
+//     return acc + curr.income;
+//   }, 0);
 
-  console.log(totalIncome);
-};
+//   console.log(totalIncome);
+// };
 
-// checkOrderStatus("CHZUSDT", 6652895749);
+checkOrderStatus("MATICUSDT", 19675292808);
 // orderBinance(21, "CHZUSDT", "Buy");
 module.exports = { orderBybit, orderBinance, checkOrderStatus };
