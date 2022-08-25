@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { orderBybit, orderBinance } = require("../hashing");
+const { orderBybit, orderBinance, checkOrderStatus } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
 require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
 
@@ -11,7 +11,8 @@ require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.e
 //////////////////////////////////////////////
 
 const coinName = "MATICUSDT";
-const stackSize = 70 * 10;
+let stackValue = 70;
+const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
 const fixingIncomeValue = 1.0035;
@@ -38,7 +39,7 @@ let zakupka = 0;
 let startCounter = 0;
 let spendedOnFirstBuy;
 
-let bufferPrice = 0.0705; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
+let bufferPrice = 0.11111; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
 
 let sendMessageTrigger = 1;
 let tier = "Start";
@@ -79,12 +80,22 @@ const getRates = async () => {
 const startTrade = async (coinsBuyQnt) => {
   if (startCounter === 0) {
     const startPrice = await getRates();
-    console.log('Start price on buy',startPrice)
+    console.log('Start price on buy', startPrice)
 
     // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
-    await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+    const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+    const realOrderPrice = await checkOrderStatus(coinName, orderId)
 
-    spendedOnFirstBuy = coinsBuyQnt * startPrice;
+    console.log('Real order price: ', realOrderPrice);
+
+    coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
+    coinsQuantity = await countStartCoinsValue(
+      coinsPrices,
+      stackSize,
+      stackDevider
+    );
+
+    spendedOnFirstBuy = coinsBuyQnt * realOrderPrice;
     startCounter = 1;
   }
 
@@ -307,7 +318,7 @@ let sellCounter = 0;
         coinsQuantity[4] * currentTier[4] +
         coinsQuantity[5] * currentTier[5]);
 
-    console.log("Average price:", Math.round(averagePrice * 100000) / 100000);
+    console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000);
 
     income =
       ((currentPrice * coinsQuantity[0] - spentMoney[0]) * currentTier[0] +
@@ -325,7 +336,7 @@ let sellCounter = 0;
     console.log("TIME NOW:", currentTime);
 
     const profitablePrice =
-      Math.round(averagePrice * fixingIncomeValue * 100000) / 100000;
+      Math.round(averagePrice * fixingIncomeValue * 1000000) / 1000000;
 
     console.log("Желаемый курс:", profitablePrice);
 

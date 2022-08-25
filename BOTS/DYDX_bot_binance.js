@@ -10,8 +10,8 @@ require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.e
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "CHZUSDT";
-let stackValue = 67;
+const coinName = "DYDXUSDT";
+let stackValue = 40;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
