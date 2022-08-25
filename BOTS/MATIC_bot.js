@@ -278,7 +278,6 @@ const startTrade = async (coinsBuyQnt) => {
 
     console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000);
 
-    console.log("Total income: ", totalIncome);
     console.log("Total buys: ", zakupka, "\n");
     console.log("Worked tiers: ", workedTiers);
     console.log("TIME NOW:", currentTime);
@@ -321,14 +320,13 @@ const startTrade = async (coinsBuyQnt) => {
 
       sendBot(message);
 
-      totalIncome = totalIncome + income;
       startCounter = 0;
       zeroBuyCounter = 0;
 
-      spentMoney = spentMoney.map((spnt) => {spnt = 0})
-      currentTier = currentTier.map((tier) => {tier = 0})
-      coinsQuantity = coinsQuantity.map((qnt) => {qnt = 0});
-      coinsPrices = coinsPrices.map((price) => {price = 0})
+      spentMoney = spentMoney.map((spnt) => spnt = 0)
+      currentTier = currentTier.map((tier) => tier = 0)
+      coinsQuantity = coinsQuantity.map((qnt) => qnt = 0);
+      coinsPrices = coinsPrices.map((price) => price = 0)
 
       awaitedPriceOnSell = 0;
       quantityOfBoughtCoins = 0;
