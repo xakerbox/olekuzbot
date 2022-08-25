@@ -10,7 +10,7 @@ require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.e
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ALICEUSDT";
+const coinName = "KAVAUSDT";
 const stackSize = 67 * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
@@ -38,7 +38,7 @@ let zakupka = 0;
 let startCounter = 0;
 let spendedOnFirstBuy;
 
-let bufferPrice = 0.0705; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
+let bufferPrice = 10.123456; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
 
 let sendMessageTrigger = 1;
 let tier = "Start";

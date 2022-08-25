@@ -1,8 +1,12 @@
 const crypto = require("crypto");
 const axios = require("axios");
-require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
+require("dotenv").config({
+  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+});
 // require("dotenv").config();
 const Binance = require("node-binance-api");
+const fs = require("fs");
+const format = require("date-fns");
 
 const bybit_api_key = process.env.BYBIT_API_KEY;
 const bybit_secret = process.env.BYBIT_SECRET_KEY;
@@ -44,18 +48,44 @@ const orderBybit = async (qntCoins, SYMBOL, operation) => {
 
 const orderBinance = async (qntCoins, SYMBOL, operation) => {
   if (operation === "Buy") {
-    const { orderId } = await binance.futuresMarketBuy(SYMBOL, qntCoins);
+    const { orderId, cumQuote } = await binance.futuresMarketBuy(
+      SYMBOL,
+      qntCoins
+    );
+
+    if (!fs.existsSync(`./${SYMBOL}_logs`)) {
+      fs.writeFileSync(`./${SYMBOL}_logs`);
+    }
+    const logsRow = `${format(
+      new Date(),
+      "dd.MM, EEEE, HH:mm:ss"
+    )} | #${orderId} ${SYMBOL}: ${operation} ---- ${qntCoins} by $${
+      cumQuote / qntCoins
+    } per coin\n`;
+    fs.appendFile(`./${SYMBOL}_logs`, logsRow);
+
     return orderId;
   }
 
   if (operation === "Sell") {
-    const avgPrice  = await binance.futuresMarketBuy(SYMBOL, qntCoins);
-    return result
-  }
+    const { avgPrice, cumQuote } = await binance.futuresMarketSell(
+      SYMBOL,
+      qntCoins
+    );
 
-  // operation === "Buy"
-  //   ? console.info(await binance.futuresMarketBuy(SYMBOL, qntCoins))
-  //   : console.info(await binance.futuresMarketSell(SYMBOL, qntCoins));
+    if (!fs.existsSync(`./${SYMBOL}_logs`)) {
+      fs.writeFileSync(`./${SYMBOL}_logs`);
+    }
+    const logsRow = `${format(
+      new Date(),
+      "dd.MM, EEEE, HH:mm:ss"
+    )} | #${orderId} ${SYMBOL}: ${operation} ---- ${qntCoins} by $${
+      cumQuote / qntCoins
+    } per coin\n`;
+    fs.appendFile(`./${SYMBOL}_logs`, logsRow);
+
+    return avgPrice;
+  }
 };
 
 const checkOrderStatus = async (SYMBOL, orderId) => {
@@ -65,8 +95,35 @@ const checkOrderStatus = async (SYMBOL, orderId) => {
   return avgPrice;
 };
 
+const getIncome = async () => {
+  const res = await binance.futuresIncome();
+  let mapper = res.filter(
+    (el) =>
+      el.symbol === "MATICUSDT" ||
+      el.symbol === "KAVAUSDT" ||
+      el.symbol === "ALICEUSDT" ||
+      el.symbol === "CHZUSDT"
+  );
+
+  mapper = mapper.map((el) => {
+    fs.appendFileSync(
+      "./alltransactions.txt",
+      `Coin: ${el.symbol}, Income: ${+el.income}\n`
+    );
+
+    return {
+      symbol: el.symbol,
+      income: +el.income,
+    };
+  });
+
+  const totalIncome = mapper.reduce((acc, curr) => {
+    return acc + curr.income;
+  }, 0);
+
+  console.log(totalIncome);
+};
+
 // checkOrderStatus("CHZUSDT", 6652895749);
-
 // orderBinance(21, "CHZUSDT", "Buy");
-
 module.exports = { orderBybit, orderBinance, checkOrderStatus };

@@ -3,15 +3,17 @@ const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
 const { orderBybit, orderBinance, checkOrderStatus } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
-require('dotenv').config({ path: '/Users/vladimir/Documents/TradeBot/ByBitBot/.env' });
+require("dotenv").config({
+  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+});
 
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "DYDXUSDT";
-let stackValue = 40;
+const coinName = "MATICUSDT";
+let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
@@ -30,7 +32,7 @@ const baseUrl =
 // const testUrl = "http://192.168.68.105:2345/put-rates";
 const testUrl = "http://localhost:2345/put-rates";
 
-const BYBIT_URL_GET_RATES = `${process.env.BYBIT_BASE_URI_GET_RATES}${coinName}`; // ByBit prod endpoint
+// const BYBIT_URL_GET_RATES = `${process.env.BYBIT_BASE_URI_GET_RATES}${coinName}`; // ByBit prod endpoint
 const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
 
 let lastPrice = 0;
@@ -58,7 +60,7 @@ const getRates = async () => {
 
     const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
 
-    console.log('NEW RESPONSE', response);
+    console.log("NEW RESPONSE", response);
     lastPrice = +response.price; // Binance Prod Get Rates
     bufferPrice = +response.price; // Binance Prod Get Rates
 
@@ -80,13 +82,13 @@ const getRates = async () => {
 const startTrade = async (coinsBuyQnt) => {
   if (startCounter === 0) {
     const startPrice = await getRates();
-    console.log('Start price on buy', startPrice)
+    console.log("Start price on buy", startPrice);
 
     // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
     const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
-    const realOrderPrice = await checkOrderStatus(coinName, orderId)
+    const realOrderPrice = await checkOrderStatus(coinName, orderId);
 
-    console.log('Real order price: ', realOrderPrice);
+    console.log("Real order price: ", realOrderPrice);
 
     coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
     coinsQuantity = await countStartCoinsValue(
@@ -233,6 +235,7 @@ let sellCounter = 0;
       averagePrice = 0;
       coinsQntMessage = coinsQuantity[0];
     }
+
     console.log(`======COIN ====> ${coinName} <=======COIN=======`);
     console.log("Цены усреднений:", JSON.stringify(coinsPrices));
     console.log("Будет куплено монет: ", coinsQuantity);
@@ -265,21 +268,13 @@ let sellCounter = 0;
     console.log("Summ of all baught coins: ", spentMoney);
     console.log("Current price: $", parseFloat(currentPrice));
 
-    summSpentOnAllCoins =
-      spentMoney[0] * currentTier[0] +
-      spentMoney[1] * currentTier[1] +
-      spentMoney[2] * currentTier[2] +
-      spentMoney[3] * currentTier[3] +
-      spentMoney[4] * currentTier[4] +
-      spentMoney[5] * currentTier[5];
+    summSpentOnAllCoins = spentMoney.reduce((acc, curr, index) => {
+      return acc + curr * currentTier[index];
+    });
 
-    quantityOfBoughtCoins =
-      coinsQuantity[0] * currentTier[0] +
-      coinsQuantity[1] * currentTier[1] +
-      coinsQuantity[2] * currentTier[2] +
-      coinsQuantity[3] * currentTier[3] +
-      coinsQuantity[4] * currentTier[4] +
-      coinsQuantity[5] * currentTier[5];
+    quantityOfBoughtCoins = coinsQuantity.reduce((acc, curr, index) => {
+      return acc + curr * currentTier[index];
+    });
 
     console.log("Quantity of bought coins:", quantityOfBoughtCoins);
     console.log(
@@ -293,30 +288,17 @@ let sellCounter = 0;
       Math.round(binanceFeeOnBuy * 100000) / 100000
     );
 
-    const actualValueOfStack =
+    actualValueOfStack =
       currentPrice *
-      (coinsQuantity[0] +
-        coinsQuantity[1] * currentTier[1] +
-        coinsQuantity[2] * currentTier[2] +
-        coinsQuantity[3] * currentTier[3] +
-        coinsQuantity[4] * currentTier[4] +
-        coinsQuantity[5] * currentTier[5]);
+      coinsQuantity.reduce((acc, cur, index) => acc + cur * currentTier[index]);
 
     console.log("Actual value of stack: $", actualValueOfStack);
 
     averagePrice =
-      (spentMoney[0] * currentTier[0] +
-        spentMoney[1] * currentTier[1] +
-        spentMoney[2] * currentTier[2] +
-        spentMoney[3] * currentTier[3] +
-        spentMoney[4] * currentTier[4] +
-        spentMoney[5] * currentTier[5]) /
-      (coinsQuantity[0] +
-        coinsQuantity[1] * currentTier[1] +
-        coinsQuantity[2] * currentTier[2] +
-        coinsQuantity[3] * currentTier[3] +
-        coinsQuantity[4] * currentTier[4] +
-        coinsQuantity[5] * currentTier[5]);
+      spentMoney.reduce((acc, curr, index) => acc + curr * currentTier[index]) /
+      coinsQuantity.reduce(
+        (acc, curr, index) => acc + curr * currentTier[index]
+      );
 
     console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000);
 
@@ -377,37 +359,10 @@ let sellCounter = 0;
       startCounter = 0;
       zeroBuyCounter = 0;
 
-      currentTier[0] = 0;
-      spentMoney[0] = 0;
-
-      currentTier[1] = 0;
-      spentMoney[1] = 0;
-
-      currentTier[2] = 0;
-      spentMoney[2] = 0;
-
-      currentTier[3] = 0;
-      spentMoney[3] = 0;
-
-      currentTier[4] = 0;
-      spentMoney[4] = 0;
-
-      currentTier[5] = 0;
-      spentMoney[5] = 0;
-
-      coinsQuantity[0] = 0;
-      coinsQuantity[1] = 0;
-      coinsQuantity[2] = 0;
-      coinsQuantity[3] = 0;
-      coinsQuantity[4] = 0;
-      coinsQuantity[5] = 0;
-
-      coinsPrices[0] = 0;
-      coinsPrices[1] = 0;
-      coinsPrices[2] = 0;
-      coinsPrices[3] = 0;
-      coinsPrices[4] = 0;
-      coinsPrices[5] = 0;
+      spentMoney = spentMoney.map(spnt => spnt = 0)
+      currentTier = currentTier.map(tier => tier = 0)
+      coinsQuantity = coinsQuantity.map(qnt => qnt = 0);
+      coinsPrices = coinsPrices.map(price => price = 0)
 
       awaitedPriceOnSell = 0;
       quantityOfBoughtCoins = 0;
