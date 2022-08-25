@@ -244,7 +244,7 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Будет куплено монет: ", coinsQuantity);
 
     spentMoney.forEach((summ, index) => {
-      console.log(`${index} average price: ${Math.round((summ/coinsQuantity[index]*100000)/100000)}`);
+      console.log(`${index} average price: ${Math.round((summ/coinsQuantity[index]*100000))/100000}`);
     })
 
     console.log("Summ of all baught coins: ", spentMoney);
@@ -261,7 +261,7 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Quantity of bought coins:", quantityOfBoughtCoins);
     console.log(
       "Summ spent on buy all coins:",
-      Math.round(summSpentOnAllCoins / 100) * 100
+      Math.round(summSpentOnAllCoins * 100) / 100
     );
 
     actualValueOfStack =
