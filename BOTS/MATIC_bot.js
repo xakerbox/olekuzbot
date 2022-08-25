@@ -38,10 +38,12 @@ const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbo
 let lastPrice = 0;
 let zakupka = 0;
 
+let priceToSell = 0;
+
 let startCounter = 0;
 let spendedOnFirstBuy;
 
-let bufferPrice = 0.11111; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
+let bufferPrice = 11111.11111; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
 
 let sendMessageTrigger = 1;
 let tier = "Start";
@@ -105,6 +107,8 @@ const startTrade = async (coinsBuyQnt) => {
     // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
     const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
     const realOrderPrice = await checkOrderStatus(coinName, orderId);
+
+    priceToSell = realOrderPrice;
 
     console.log("Real order price: ", realOrderPrice);
 
@@ -282,10 +286,7 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Worked tiers: ", workedTiers);
     console.log("TIME NOW:", currentTime);
 
-    const profitablePrice =
-      Math.round(averagePrice * fixingIncomeValue * 1000000) / 1000000;
-
-    console.log("Желаемый курс:", profitablePrice);
+    console.log("Желаемый курс:", +priceToSell*fixingIncomeValue);
 
     if (sendMessageTrigger === 1) {
       let message = {
@@ -295,14 +296,14 @@ const startTrade = async (coinsBuyQnt) => {
         price: currentPrice,
         summ: spendedOnFirstBuy,
         tier,
-        profitPrice: profitablePrice,
+        profitPrice: priceToSell,
       };
       sendBot(message);
 
       sendMessageTrigger = 0;
     }
 
-    if (currentPrice >= profitablePrice) {
+    if (currentPrice >= +priceToSell * fixingIncomeValue) {
       // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
       await orderBinance(+quantityOfBoughtCoins, coinName, "Sell"); // Binance Prod endpoint
       let message = {
@@ -330,6 +331,7 @@ const startTrade = async (coinsBuyQnt) => {
 
       awaitedPriceOnSell = 0;
       quantityOfBoughtCoins = 0;
+      priceToSell = 0;
 
       sellCounter += 1;
       console.log("ТРИГГЕР ТАЙМЕРА:", sellCounter);

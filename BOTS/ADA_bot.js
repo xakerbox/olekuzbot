@@ -286,7 +286,7 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Worked tiers: ", workedTiers);
     console.log("TIME NOW:", currentTime);
 
-    console.log("Желаемый курс:", priceToSell);
+    console.log("Желаемый курс:", +priceToSell);
 
     if (sendMessageTrigger === 1) {
       let message = {
@@ -303,7 +303,7 @@ const startTrade = async (coinsBuyQnt) => {
       sendMessageTrigger = 0;
     }
 
-    if (currentPrice >= priceToSell * fixingIncomeValue) {
+    if (currentPrice >= +priceToSell * fixingIncomeValue) {
       // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
       await orderBinance(+quantityOfBoughtCoins, coinName, "Sell"); // Binance Prod endpoint
       let message = {
