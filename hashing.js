@@ -88,38 +88,46 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
 };
 
 const checkOrderStatus = async (SYMBOL, orderId) => {
-  const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
-    orderId,
-  });
-  // const resp = await binance.futuresOrderStatus(SYMBOL, {
+  // const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
   //   orderId,
   // });
+  const resp = await binance.futuresOrderStatus(SYMBOL, {
+    orderId,
+  });
 
-  return avgPrice;
+  console.log(resp);
+
+  return resp
+
+  // return avgPrice;
 };
 
 const getAverageOnPosition = async (symbol) => {
   const { positions } = await binance.futuresAccount();
   const resultResponse = positions.filter((el) => el.symbol === symbol);
 
+console.log(resultResponse);
+
   const avrPrice = +resultResponse[0].entryPrice;
 
   return avrPrice;
 };
 
-console.time("Check");
-(async () => {
-  const b = await getAverageOnPosition("ADAUSDT");
-  // console.log(b);
-  console.timeEnd("Check");
-})();
 
+const getBalance = async (symbol) => {
+  const resultRaw =  await binance.futuresIncome();
+  const realizedPNLs = resultRaw.filter(el => el.symbol === symbol && el.incomeType === 'REALIZED_PNL');
+  const {income} = realizedPNLs[realizedPNLs.length - 1];
 
-// checkOrderStatus("ADAUSDT", 24139130591);
+  return income;
+}
+
+// checkOrderStatus("ADAUSDT", 24162380190);
 // orderBinance(21, "CHZUSDT", "Buy");
 module.exports = {
   orderBybit,
   orderBinance,
   checkOrderStatus,
   getAverageOnPosition,
+  getBalance
 };

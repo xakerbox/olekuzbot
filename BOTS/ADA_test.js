@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { orderBybit, orderBinance, checkOrderStatus, getAverageOnPosition } = require("../hashing");
+const { orderBybit, orderBinance, checkOrderStatus, getAverageOnPosition, getBalance } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
 require("dotenv").config({
   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
@@ -12,8 +12,9 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ADAUSDT";
+const coinName = "BATUSDT";
 let stackValue = 70;
+let increaseStack = 1.00015
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
@@ -69,6 +70,14 @@ let awaitedPriceOnSell;
 let averagePrice;
 
 let sellCounter = 0;
+
+const timer = async () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve('')
+    }, 2000)
+  })
+}
 
 const getRates = async () => {
   try {
@@ -129,91 +138,10 @@ const startTrade = async (coinsBuyQnt) => {
   return spendedOnFirstBuy;
 };
 
-(async function main() {
-  setInterval(async () => {
+async function main() {
     const currentTime = format(new Date(), "dd MMMM kk:mm:ss");
 
     const currentPrice = await getRates();
-
-    // console.log("ВРЕМЯ ПЕРВОЙ ПОКУПКИ:", Date.now() - timeFromLastSell);
-    // console.log("ВРЕМЯ ВТОРОЙ:", Date.now() - timeFromLastSellBuffer);
-    // console.log("ВРЕМЯ ТРЕТЬЕЙ", Date.now() - timeEndBuffer);
-    // console.log("ПРОДАЖНИК:", sellCounter);
-
-    // if (
-    //   Date.now() - timeFromLastSell < secondBuyPause * 1000 &&
-    //   sellCounter === 1
-    // ) {
-    //   console.log(
-    //     "Секунд до старта: <10000",
-    //     secondBuyPause - (Date.now() - timeFromLastSell)
-    //   ) / 1000;
-    //   timeFromLastSellBuffer = timeFromLastSell;
-    //   console.log("ТРИГГЕР:", sellCounter);
-    //   return;
-    // }
-
-    // if (
-    //   Date.now() - timeFromLastSellBuffer > secondBuyPause * 1000 &&
-    //   sellCounter === 1
-    // ) {
-    //   console.log(
-    //     "Секунд до старта:>10000",
-    //     secondBuyPause - (Date.now() - timeFromLastSell)
-    //   ) / 1000;
-    //   // timeFromLastSellBuffer = timeFromLastSell;
-    //   console.log("ТРИГГЕР:", sellCounter);
-    //   zeroBuyCounter === 0;
-    // }
-
-    // if (
-    //   Date.now() - timeFromLastSellBuffer < thirdBuyPause * 1000 &&
-    //   sellCounter === 2
-    // ) {
-    //   console.log(
-    //     "Секунд до старта:",
-    //     thirdBuyPause - (Date.now() - timeFromLastSell)
-    //   ) / 1000;
-    //   timeEndBuffer = timeFromLastSellBuffer;
-    //   return;
-    // }
-
-    // if (
-    //   Date.now() - timeFromLastSellBuffer > thirdBuyPause * 1000 &&
-    //   sellCounter === 2
-    // ) {
-    //   console.log(
-    //     "Секунд до старта:",
-    //     thirdBuyPause - (Date.now() - timeFromLastSell)
-    //   ) / 1000;
-    //   timeEndBuffer = timeFromLastSellBuffer;
-    //   zeroBuyCounter === 0;
-    // }
-
-    // if (
-    //   Date.now() - timeEndBuffer < fourthBuyPause * 1000 &&
-    //   sellCounter === 3
-    // ) {
-    //   console.log(
-    //     "Секунд до старта:",
-    //     fourthBuyPause - (Date.now() - timeFromLastSell)
-    //   ) / 1000;
-    //   return;
-    // }
-
-    // if (
-    //   Date.now() - timeEndBuffer > fourthBuyPause * 1000 &&
-    //   sellCounter === 3
-    // ) {
-    //   console.log(
-    //     "Секунд до старта:",
-    //     fourthBuyPause - (Date.now() - timeFromLastSell)
-    //   ) / 1000;
-    //   timeEndBuffer = 0;
-    //   timeFromLastSellBuffer = 0;
-    //   sellCounter = 0;
-    //   zeroBuyCounter === 0;
-    // }
 
     if (zeroBuyCounter === 0) {
       coinsPrices = await buyPriceValues(+currentPrice, middleSplitter);
@@ -283,10 +211,11 @@ const startTrade = async (coinsBuyQnt) => {
         (acc, curr, index) => acc + curr * currentTier[index]
       );
 
-    console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000);
+    console.log("Average price:", Math.round(+priceToSell * 1000000) / 1000000); 
 
     console.log("Total buys: ", zakupka, "\n");
     console.log("Worked tiers: ", workedTiers);
+    console.log('Размер стека:', stackValue);
     console.log("TIME NOW:", currentTime);
 
     console.log("Желаемый курс:", +priceToSell * fixingIncomeValue);
@@ -345,7 +274,11 @@ const startTrade = async (coinsBuyQnt) => {
 
       sendMessageTrigger = 1;
 
+      const totalPNL = await getBalance(coinName);
+      stackValue = stackValue + totalPNL/2;
+
       tier = "Start";
+
 
       return;
     }
@@ -426,5 +359,14 @@ const startTrade = async (coinsBuyQnt) => {
 
       return;
     }
-  }, 3500);
-})();
+}
+
+const startBot = async () => {
+  console.time('Time one cycle');
+  await main();
+  await timer();
+  console.timeEnd('Time one cycle');
+  startBot();
+}
+
+startBot();
