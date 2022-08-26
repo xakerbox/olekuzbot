@@ -20,7 +20,6 @@ const binance = new Binance().options({
 });
 
 const BASE_URI_BUY_SELL = process.env.BYBIT_BASE_URI_CREATE_ORDER;
-console.log("BASE_URI", BASE_URI_BUY_SELL);
 const BASE_BINANCE_URI_ORDER = process.env.BINANCE_BASE_URI_ORDER;
 
 // const BASE_URI_SELL = "https://api.bybit.com/private/linear/order/cancel?";
@@ -108,6 +107,19 @@ const getAverageOnPosition = async (symbol) => {
   return avrPrice;
 };
 
+console.time("Check");
+(async () => {
+  const b = await getAverageOnPosition("ADAUSDT");
+  // console.log(b);
+  console.timeEnd("Check");
+})();
+
+
 // checkOrderStatus("ADAUSDT", 24139130591);
 // orderBinance(21, "CHZUSDT", "Buy");
-module.exports = { orderBybit, orderBinance, checkOrderStatus, getAverageOnPosition };
+module.exports = {
+  orderBybit,
+  orderBinance,
+  checkOrderStatus,
+  getAverageOnPosition,
+};
