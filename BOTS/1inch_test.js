@@ -1,23 +1,23 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { orderBybit, orderBinance, checkOrderStatus } = require("../hashing");
+const { orderBybit, orderBinance, checkOrderStatus, getAverageOnPosition } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
 require("dotenv").config({
   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
 });
 
-//////////////////////////////////////////////
+///////////////////////////////////////////
 //////////////////////////////////////////////
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "C98USDT";
-let stackValue = 36;
+const coinName = "1INCHUSDT";
+let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.2, 0.4, 0.6, 0.8, 1];
-const fixingIncomeValue = 1.0021;
+const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
+const fixingIncomeValue = 1.003;
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -43,7 +43,7 @@ let priceToSell = 0;
 let startCounter = 0;
 let spendedOnFirstBuy;
 
-let bufferPrice = 11111.11111; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
+let bufferPrice = 0; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
 
 let sendMessageTrigger = 1;
 let tier = "Start";
@@ -426,5 +426,5 @@ const startTrade = async (coinsBuyQnt) => {
 
       return;
     }
-  }, 2500);
+  }, 3500);
 })();

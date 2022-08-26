@@ -1,23 +1,23 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { orderBybit, orderBinance, checkOrderStatus } = require("../hashing");
+const { orderBybit, orderBinance, checkOrderStatus, getAverageOnPosition } = require("../hashing");
 const { sendBot, sendErrorMessage } = require("../telegrambot");
 require("dotenv").config({
   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
 });
 
-//////////////////////////////////////////////
+///////////////////////////////////////////
 //////////////////////////////////////////////
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "MATICUSDT";
+const coinName = "SFPUSDT";
 let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.5, 1.1, 2.5, 4, 10];
-const fixingIncomeValue = 1.0035;
+const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
+const fixingIncomeValue = 1.003;
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -43,7 +43,7 @@ let priceToSell = 0;
 let startCounter = 0;
 let spendedOnFirstBuy;
 
-let bufferPrice = 11111.11111; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
+let bufferPrice = 0; // это не учитывается при старте - это часть теста/ Назуй! нельзя - нужная переменная. Сколько знаков на ADA после запятой?4
 
 let sendMessageTrigger = 1;
 let tier = "Start";
@@ -106,9 +106,10 @@ const startTrade = async (coinsBuyQnt) => {
 
     // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
     const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+    console.log(orderId);
     const realOrderPrice = await checkOrderStatus(coinName, orderId);
 
-    priceToSell = realOrderPrice;
+    priceToSell = await getAverageOnPosition(coinName);
 
     console.log("Real order price: ", realOrderPrice);
 
@@ -127,8 +128,6 @@ const startTrade = async (coinsBuyQnt) => {
 
   return spendedOnFirstBuy;
 };
-
-
 
 (async function main() {
   setInterval(async () => {
@@ -248,8 +247,12 @@ const startTrade = async (coinsBuyQnt) => {
     console.log("Будет куплено монет: ", coinsQuantity);
 
     spentMoney.forEach((summ, index) => {
-      console.log(`${index} average price: ${Math.round((summ/coinsQuantity[index]*100000))/100000}`);
-    })
+      console.log(
+        `${index} average price: ${
+          Math.round((summ / coinsQuantity[index]) * 100000) / 100000
+        }`
+      );
+    });
 
     console.log("Summ of all baught coins: ", spentMoney);
     console.log("Current price: $", parseFloat(currentPrice));
@@ -280,13 +283,13 @@ const startTrade = async (coinsBuyQnt) => {
         (acc, curr, index) => acc + curr * currentTier[index]
       );
 
-    console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000);
+    console.log("Average price:", Math.round(averagePrice * 1000000) / 1000000); // вот тут надо priceToSell и всё красиво:)
 
     console.log("Total buys: ", zakupka, "\n");
     console.log("Worked tiers: ", workedTiers);
     console.log("TIME NOW:", currentTime);
 
-    console.log("Желаемый курс:", +priceToSell*fixingIncomeValue);
+    console.log("Желаемый курс:", +priceToSell * fixingIncomeValue);
 
     if (sendMessageTrigger === 1) {
       let message = {
@@ -303,7 +306,10 @@ const startTrade = async (coinsBuyQnt) => {
       sendMessageTrigger = 0;
     }
 
-    if (currentPrice >= +priceToSell * fixingIncomeValue) {
+    const ourWillingPrice = +priceToSell * fixingIncomeValue;
+    console.log("PRICE FOR SELL:", ourWillingPrice);
+
+    if (currentPrice >= ourWillingPrice) {
       // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
       await orderBinance(+quantityOfBoughtCoins, coinName, "Sell"); // Binance Prod endpoint
       let message = {
@@ -324,10 +330,10 @@ const startTrade = async (coinsBuyQnt) => {
       startCounter = 0;
       zeroBuyCounter = 0;
 
-      spentMoney = spentMoney.map((spnt) => spnt = 0)
-      currentTier = currentTier.map((tier) => tier = 0)
-      coinsQuantity = coinsQuantity.map((qnt) => qnt = 0);
-      coinsPrices = coinsPrices.map((price) => price = 0)
+      spentMoney = spentMoney.map((spnt) => (spnt = 0));
+      currentTier = currentTier.map((tier) => (tier = 0));
+      coinsQuantity = coinsQuantity.map((qnt) => (qnt = 0));
+      coinsPrices = coinsPrices.map((price) => (price = 0));
 
       awaitedPriceOnSell = 0;
       quantityOfBoughtCoins = 0;
@@ -340,6 +346,8 @@ const startTrade = async (coinsBuyQnt) => {
       sendMessageTrigger = 1;
 
       tier = "Start";
+
+      return;
     }
 
     if (currentPrice <= coinsPrices[1] && currentTier[1] == 0) {
@@ -418,5 +426,5 @@ const startTrade = async (coinsBuyQnt) => {
 
       return;
     }
-  }, 2500);
+  }, 3500);
 })();

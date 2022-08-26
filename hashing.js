@@ -89,15 +89,14 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
 };
 
 const checkOrderStatus = async (SYMBOL, orderId) => {
-  // const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
-  //   orderId,
-  // });
-  const resp = await binance.futuresOrderStatus(SYMBOL, {
+  const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
     orderId,
   });
+  // const resp = await binance.futuresOrderStatus(SYMBOL, {
+  //   orderId,
+  // });
 
-  console.log(resp);
-  // return avgPrice;
+  return avgPrice;
 };
 
 const getAverageOnPosition = async (symbol) => {
