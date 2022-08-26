@@ -88,18 +88,18 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
 };
 
 const checkOrderStatus = async (SYMBOL, orderId) => {
-  // const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
-  //   orderId,
-  // });
-  const resp = await binance.futuresOrderStatus(SYMBOL, {
+  const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
     orderId,
   });
+  // const resp = await binance.futuresOrderStatus(SYMBOL, {
+  //   orderId,
+  // });
 
-  console.log(resp);
+  // console.log(resp);
 
-  return resp
+  // return resp
 
-  // return avgPrice;
+  return avgPrice;
 };
 
 const getAverageOnPosition = async (symbol) => {
@@ -113,10 +113,12 @@ console.log(resultResponse);
   return avrPrice;
 };
 
-
 const getBalance = async (symbol) => {
   const resultRaw =  await binance.futuresIncome();
   const realizedPNLs = resultRaw.filter(el => el.symbol === symbol && el.incomeType === 'REALIZED_PNL');
+  if (!realizedPNLs.length) {
+    return 0
+  }
   const {income} = realizedPNLs[realizedPNLs.length - 1];
 
   return income;

@@ -12,9 +12,8 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "BATUSDT";
+const coinName = "ADAUSDT";
 let stackValue = 70;
-let increaseStack = 1.00015
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
@@ -275,7 +274,7 @@ async function main() {
       sendMessageTrigger = 1;
 
       const totalPNL = await getBalance(coinName);
-      stackValue = stackValue + totalPNL/2;
+      stackValue = stackValue + (+totalPNL/2);
 
       tier = "Start";
 
