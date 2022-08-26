@@ -12,7 +12,7 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "CHZ";
+const coinName = "CHZUSDT";
 let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
