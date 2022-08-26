@@ -12,7 +12,7 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "APEUSDT";
+const coinName = "BATUSDT";
 let stackValue = 70;
 let increaseStack = 1.00015
 const stackSize = stackValue * 10;
