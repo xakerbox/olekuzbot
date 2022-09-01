@@ -19,13 +19,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "EOSUSDT";
+const coinName = "TRXUSDT";
 let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.6, 1.3, 2.7, 6, 10];
+const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
 const fixingIncomeValue = 1.003;
-const decimals = 3; // Количество знаков после запятой в округлениях.
+const decimals = 5; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -217,7 +217,7 @@ async function main() {
     coinsQuantity.reduce((acc, curr, index) => acc + curr * currentTier[index]);
 
   console.log("Средняя цена: $",rounder(+priceToSell, decimals));
-  console.log("Торговый стек (накоп.):", stackValue)
+
   console.log("Всего закупок: ", zakupka, "\n");
   console.log("Уровни усреднение: ", workedTiers);
   console.log("Размер стека (по бирже):", actualBoughtCoins);

@@ -29,28 +29,31 @@ const hashParams = (params, secret) => {
   return crypto.createHmac("sha256", secret).update(params).digest("hex");
 };
 
-const orderBybit = async (qntCoins, SYMBOL, operation) => {
-  reduceParam = operation === "Buy" ? false : true;
+// const orderBybit = async (qntCoins, SYMBOL, operation) => {
+//   reduceParam = operation === "Buy" ? false : true;
 
-  console.log("QUANTITY COINS:", qntCoins);
-  console.log("SYMBOL:", SYMBOL);
-  console.log("OPERATION:", operation);
+//   console.log("QUANTITY COINS:", qntCoins);
+//   console.log("SYMBOL:", SYMBOL);
+//   console.log("OPERATION:", operation);
 
-  const params = `api_key=${bybit_api_key}&close_on_trigger=false&order_type=Market&qty=${qntCoins}&reduce_only=${reduceParam}&side=${operation}&symbol=${SYMBOL}&time_in_force=GoodTillCancel&timestamp=${Date.now()}`;
-  const sign = hashParams(params, bybit_secret);
+//   const params = `api_key=${bybit_api_key}&close_on_trigger=false&order_type=Market&qty=${qntCoins}&reduce_only=${reduceParam}&side=${operation}&symbol=${SYMBOL}&time_in_force=GoodTillCancel&timestamp=${Date.now()}`;
+//   const sign = hashParams(params, bybit_secret);
 
-  const URI = `${BASE_URI_BUY_SELL}${params}&sign=${sign}`;
+//   const URI = `${BASE_URI_BUY_SELL}${params}&sign=${sign}`;
 
-  const { data: result } = await axios.post(URI);
-  console.log("Status order:", result);
-};
+//   const { data: result } = await axios.post(URI);
+//   console.log("Status order:", result);
+// };
 
 const orderBinance = async (qntCoins, SYMBOL, operation) => {
   if (operation === "Buy") {
-    const { orderId, cumQuote } = await binance.futuresMarketBuy(
+    const result = await binance.futuresMarketBuy(
       SYMBOL,
       qntCoins
     );
+
+    console.log('Result on buy in HASHING:', result);
+    const {orderId, cumQuote}  = result;
 
     if (!fs.existsSync(`./${SYMBOL}_logs`)) {
       fs.writeFileSync(`./${SYMBOL}_logs`, `LOGS FOR ${SYMBOL}\n`);
@@ -142,7 +145,6 @@ const getQntCoinsInPosition = async (symbol) => {
 
 
 module.exports = {
-  orderBybit,
   orderBinance,
   checkOrderStatus,
   getAverageOnPosition,

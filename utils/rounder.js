@@ -22,8 +22,6 @@ const rounder = (value, decimals) => {
       break;
   }
 
-  console.log(round);
-
   const result = Math.round(value * round) / round;
   return result;
 };

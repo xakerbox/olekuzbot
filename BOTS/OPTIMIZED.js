@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
-const { rounder } = require("./../utils/rounder");
+const { rounder } = require("../utils/rounder");
 const {
   orderBinance,
   checkOrderStatus,
@@ -19,13 +19,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "CHZUSDT";
+const coinName = "EOSUSDT";
 let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
+const middleSplitter = [0.6, 1.3, 2.7, 6, 10];
 const fixingIncomeValue = 1.003;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const decimals = 3; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -64,6 +64,7 @@ let workedTiers = [0, 0, 0, 0, 0, 0];
 
 let summSpentOnAllCoins;
 let quantityOfBoughtCoins;
+let realOrderPrice;
 
 let sellCounter = 0;
 
@@ -106,17 +107,23 @@ const getRates = async () => {
 
 const startTrade = async (coinsBuyQnt) => {
   if (startCounter === 0) {
-    const startPrice = await getRates();
-    console.log("Курс покупки (опрошенная):", startPrice);
 
-    // await orderBybit(coinsBuyQnt, coinName, "Buy"); // ByBit Prod endpoint
-    const { orderId, origQty } = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
-    console.log(orderId);
-    const realOrderPrice = await checkOrderStatus(coinName, orderId);
+    try {
+      const startPrice = await getRates();
+      console.log("Курс покупки (опрошенная):", startPrice);
+      console.log('Параметры для ORDERID:', coinsBuyQnt, coinName);
 
-    priceToSell = await getAverageOnPosition(coinName);
+      const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+      console.log('ORDER ID:', orderId);
+      realOrderPrice = await checkOrderStatus(coinName, orderId);
+  
+      priceToSell = await getAverageOnPosition(coinName);
+  
+      console.log("Реальный курс сделки: ", realOrderPrice);
+    } catch(e) {
+      console.log(e);
+    }
 
-    console.log("Реальный курс сделки: ", realOrderPrice);
 
     if (currentTier[1] === 0) {
       coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
@@ -142,12 +149,16 @@ async function main() {
   const currentPrice = await getRates();
 
   if (zeroBuyCounter === 0) {
+
     coinsPrices = await buyPriceValues(+currentPrice, middleSplitter);
     coinsQuantity = await countStartCoinsValue(
       coinsPrices,
       stackSize,
       stackDevider
     );
+
+    console.log('START TRADE INVOKE:', currentPrice, middleSplitter, coinsPrices, coinsQuantity);
+
 
     spentMoney[0] = await startTrade(
       coinsQuantity[0],
@@ -169,12 +180,12 @@ async function main() {
   }
 
   console.log(`======COIN ====> ${coinName} <=======COIN=======`);
-  console.log("Цены усреднений:", JSON.stringify(coinsPrices));
+  console.log("Цены усреднений:", coinsPrices);
   console.log("Будет куплено монет: ", coinsQuantity);
 
   spentMoney.forEach((summ, index) => {
     console.log(
-      `${index} усреднение, курс закупки: ${rounder(
+      `${index} у., курс закупки: ${rounder(
         summ / coinsQuantity[index],
         decimals
       )}`
@@ -193,7 +204,7 @@ async function main() {
   });
 
   console.log("Всего куплено монет:", quantityOfBoughtCoins);
-  console.log("Потрачено на монеты:", rounder(summSpentOnAllCoins, 2));
+  console.log("Потрачено на монеты: $",rounder(summSpentOnAllCoins, 2));
 
   actualValueOfStack =
     currentPrice *
@@ -205,12 +216,11 @@ async function main() {
     spentMoney.reduce((acc, curr, index) => acc + curr * currentTier[index]) /
     coinsQuantity.reduce((acc, curr, index) => acc + curr * currentTier[index]);
 
-  console.log("Средняя цена:", rounder(+priceToSell, decimals));
-
+  console.log("Средняя цена: $",rounder(+priceToSell, decimals));
+  console.log("Торговый стек (накоп.):", stackValue)
   console.log("Всего закупок: ", zakupka, "\n");
   console.log("Уровни усреднение: ", workedTiers);
   console.log("Размер стека (по бирже):", actualBoughtCoins);
-  console.log("Желаемый курс:", rounder(+priceToSell * fixingIncomeValue, decimals));
 
   console.log("ВРЕМЯ:", currentTime);
 
@@ -230,7 +240,7 @@ async function main() {
   }
 
   const ourWillingPrice = +priceToSell * fixingIncomeValue;
-  console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", ourWillingPrice);
+  console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", rounder(ourWillingPrice,5));
 
   if (currentPrice >= ourWillingPrice) {
     // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
