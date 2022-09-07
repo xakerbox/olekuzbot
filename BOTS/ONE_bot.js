@@ -270,9 +270,9 @@ async function main() {
     let message = {
       operation: "Продано",
       coin: coinName,
-      qnt: origQty,
-      price: avgPrice,
-      summ: cumQuote,
+      qnt: +origQty,
+      price: +avgPrice,
+      summ: +cumQuote,
       tier: "Продажа.",
       dirtyIncome: {
         sellOn: rounder(totalPNL, 3),

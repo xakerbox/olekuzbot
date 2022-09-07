@@ -18,11 +18,24 @@ const bot = new TelegramBot(token, { polling: false });
 const sendBot = (message) => {
   let mes = message;
 
+  // let message = {
+  //   operation: "Продано",
+  //   coin: coinName,
+  //   qnt: origQty,
+  //   price: avgPrice,
+  //   summ: cumQuote,
+  //   tier: "Продажа.",
+  //   dirtyIncome: {
+  //     sellOn: rounder(totalPNL, 3),
+  //     boughtOn: summSpentOnAllCoins,
+  //   },
+  // };
+
   const tier = mes.tier === "Start" ? "Закупка." : `${mes.tier}`;
   chatIds.forEach(async (chatId) => {
     let dirtyIncome = mes.dirtyIncome ? mes.dirtyIncome : "";
     let incomeRow = dirtyIncome
-      ? `На мороженку (уже с вычетом 0.12% FEE) = $${
+      ? `На мороженку (уже с вычетом 0.08% FEE) = $${
         dirtyIncome.sellOn
         }`
       : "";
