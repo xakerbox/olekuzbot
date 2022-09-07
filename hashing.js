@@ -70,7 +70,7 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
   }
 
   if (operation === "Sell") {
-    const { orderId, avgPrice, cumQuote } = await binance.futuresMarketSell(
+    const { orderId, avgPrice, cumQuote, origQty } = await binance.futuresMarketSell(
       SYMBOL,
       qntCoins
     );
@@ -86,7 +86,7 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
     } per coin\n`;
     fs.appendFileSync(`./${SYMBOL}_logs`, logsRow);
 
-    return avgPrice;
+    return {avgPrice, origQty, cumQuote};
   }
 };
 

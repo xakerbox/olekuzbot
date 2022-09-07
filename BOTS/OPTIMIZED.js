@@ -86,7 +86,6 @@ const getRates = async () => {
 
     const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
 
-    console.log("NEW RESPONSE", response);
     lastPrice = +response.price; // Binance Prod Get Rates
     bufferPrice = +response.price; // Binance Prod Get Rates
 
@@ -245,22 +244,7 @@ async function main() {
   if (currentPrice >= ourWillingPrice) {
     // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
     const preSellCheckQntCoins = await getQntCoinsInPosition(coinName);
-    await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
-
-    let message = {
-      operation: "Продано",
-      coin: coinName,
-      qnt: quantityOfBoughtCoins,
-      price: currentPrice,
-      summ: quantityOfBoughtCoins * currentPrice,
-      tier: "Продажа.",
-      dirtyIncome: {
-        sellOn: quantityOfBoughtCoins * currentPrice,
-        boughtOn: summSpentOnAllCoins,
-      },
-    };
-
-    sendBot(message);
+    const {avgPrice, origQty, cumQuote} = await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
 
     startCounter = 0;
     zeroBuyCounter = 0;
@@ -282,6 +266,21 @@ async function main() {
 
     const totalPNL = await getBalance(coinName);
     stackValue = stackValue + +totalPNL / 2;
+
+    let message = {
+      operation: "Продано",
+      coin: coinName,
+      qnt: origQty,
+      price: avgPrice,
+      summ: cumQuote,
+      tier: "Продажа.",
+      dirtyIncome: {
+        sellOn: rounder(totalPNL, 3),
+        boughtOn: summSpentOnAllCoins,
+      },
+    };
+
+    sendBot(message);
 
     tier = "Start";
 

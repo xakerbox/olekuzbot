@@ -21,10 +21,9 @@ const sendBot = (message) => {
   const tier = mes.tier === "Start" ? "Закупка." : `${mes.tier}`;
   chatIds.forEach(async (chatId) => {
     let dirtyIncome = mes.dirtyIncome ? mes.dirtyIncome : "";
-    let cleanIncome = (dirtyIncome.sellOn - dirtyIncome.boughtOn) - (dirtyIncome.sellOn*0.0006 + dirtyIncome.boughtOn*0.0006);
     let incomeRow = dirtyIncome
       ? `На мороженку (уже с вычетом 0.12% FEE) = $${
-          Math.round(cleanIncome*10000)/10000
+        dirtyIncome.sellOn
         }`
       : "";
 
