@@ -20,7 +20,7 @@ bot.onText(/\/start/, (msg) => {
 
   bot.sendMessage(msg.chat.id, 'Чё надо?', {
   "reply_markup": {
-      "keyboard": [['BALANCE'], ['COINS']]
+      "keyboard": [['🏦 BALANCE 🏦'], ['🪙 COINS 🪙']]
       }
   });
   
