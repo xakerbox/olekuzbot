@@ -31,28 +31,22 @@ const sendBot = (message) => {
   //   },
   // };
 
-  const tier = mes.tier === "Start" ? "Закупка." : `${mes.tier}`;
+  const tier = mes.tier === "Start" ? "🟢 Закупка" : `${mes.tier}`;
   chatIds.forEach(async (chatId) => {
     let dirtyIncome = mes.dirtyIncome ? mes.dirtyIncome : "";
     let incomeRow = dirtyIncome
-      ? `На мороженку (уже с вычетом 0.08% FEE) = $${
+      ? `💰💰💰 $${
         dirtyIncome.sellOn
-        }`
+        } 💰💰💰`
       : "";
 
-    let sellPrice = mes.profitPrice ? `Ожидаемая прибыльная цена: $${JSON.stringify(mes.profitPrice)}` : ''
+    // let sellPrice = mes.profitPrice ? `Ожидаемая прибыльная цена: $${JSON.stringify(mes.profitPrice)}` : ''
 
     bot.sendMessage(
       chatId,
       `
---------------------
-${tier}
-${mes.operation} ${mes.qnt} ${mes.coin} по цене $${
-        mes.price
-      } на $${mes.summ.toFixed(2)}
-${sellPrice}
+-------${tier} | ${mes.qnt} ${mes.coin}---------
 ${incomeRow}
---------------------
       `
     );
   });
@@ -62,7 +56,7 @@ const sendErrorMessage = (error) => {
   let mes = error;
 
   chatIds.forEach(async (chatId) => {
-    bot.sendMessage(chatId, `${mes.coin} вышел из чата. ${mes.error}\n`);
+    bot.sendMessage(chatId, `🚨 ${mes.coin} вышел из чата. ${mes.error}\n`);
   });
 };
 

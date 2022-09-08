@@ -19,13 +19,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ONEUSDT";
+const coinName = "SFPUSDT";
 let stackValue = 72;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 2.7, 6, 10];
 const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const decimals = 4; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell

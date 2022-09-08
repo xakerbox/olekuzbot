@@ -221,7 +221,7 @@ async function main() {
   console.log("Уровни усреднение: ", workedTiers);
   console.log("Размер стека (по бирже):", actualBoughtCoins);
 
-  console.log("ВРЕМЯ:", currentTime);
+  console.log("⏱", currentTime);
 
   if (sendMessageTrigger === 1) {
     let message = {
@@ -242,7 +242,6 @@ async function main() {
   console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", rounder(ourWillingPrice,5));
 
   if (currentPrice >= ourWillingPrice) {
-    // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
     const preSellCheckQntCoins = await getQntCoinsInPosition(coinName);
     const {avgPrice, origQty, stopPrice } = await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
 
@@ -273,7 +272,7 @@ async function main() {
         qnt: +origQty,
         price: +stopPrice,
         summ: (+stopPrice)/(+origQty),
-        tier: "Продажа.",
+        tier: "🔴 Продажа",
         dirtyIncome: {
           sellOn: rounder(totalPNL, 3),
           boughtOn: summSpentOnAllCoins,
@@ -297,7 +296,7 @@ async function main() {
 
     coinsQntMessage = coinsQuantity[1];
     sendMessageTrigger = 1;
-    tier = "1 усреднение";
+    tier = "1️⃣ усреднение";
 
     return;
   }
@@ -312,7 +311,7 @@ async function main() {
 
     coinsQntMessage = coinsQuantity[2];
     sendMessageTrigger = 1;
-    tier = "2 усреднение";
+    tier = "2️⃣ усреднение";
 
     return;
   }
@@ -327,7 +326,7 @@ async function main() {
     coinsQntMessage = coinsQuantity[3];
 
     sendMessageTrigger = 1;
-    tier = "3 усреднение";
+    tier = "3️⃣ усреднение";
 
     return;
   }
@@ -343,7 +342,7 @@ async function main() {
     coinsQntMessage = coinsQuantity[4];
 
     sendMessageTrigger = 1;
-    tier = "4 усреднение";
+    tier = "4️⃣ усреднение";
 
     return;
   }
@@ -359,7 +358,7 @@ async function main() {
     coinsQntMessage = coinsQuantity[5];
 
     sendMessageTrigger = 1;
-    tier = "5 усреднение";
+    tier = "5️⃣ усреднение";
 
     return;
   }
