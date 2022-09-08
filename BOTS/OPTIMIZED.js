@@ -19,13 +19,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ONEUSDT";
+const coinName = "EOSUSDT";
 let stackValue = 70;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 2.7, 6, 10];
-const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const fixingIncomeValue = 1.003;
+const decimals = 3; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -244,7 +244,7 @@ async function main() {
   if (currentPrice >= ourWillingPrice) {
     // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
     const preSellCheckQntCoins = await getQntCoinsInPosition(coinName);
-    const {avgPrice, origQty, cumQuote} = await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
+    const {avgPrice, origQty, cumQuote, stopPrice} = await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
 
     startCounter = 0;
     zeroBuyCounter = 0;
@@ -270,9 +270,9 @@ async function main() {
     let message = {
       operation: "Продано",
       coin: coinName,
-      qnt: +origQty,
-      price: +avgPrice,
-      summ: +cumQuote,
+      qnt: origQty,
+      price: avgPrice,
+      summ: cumQuote,
       tier: "Продажа.",
       dirtyIncome: {
         sellOn: rounder(totalPNL, 3),
