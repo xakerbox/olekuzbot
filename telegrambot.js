@@ -35,17 +35,15 @@ const sendBot = (message) => {
   chatIds.forEach(async (chatId) => {
     let dirtyIncome = mes.dirtyIncome ? mes.dirtyIncome : "";
     let incomeRow = dirtyIncome
-      ? `💰💰💰 $${
+      ? `💰💰 $${
         dirtyIncome.sellOn
-        } 💰💰💰`
+        } 💰💰`
       : "";
-
-    // let sellPrice = mes.profitPrice ? `Ожидаемая прибыльная цена: $${JSON.stringify(mes.profitPrice)}` : ''
 
     bot.sendMessage(
       chatId,
       `
--------${tier} | ${mes.qnt} ${mes.coin}---------
+${tier} | ${mes.qnt} ${mes.coin.slice(0, -4)}
 ${incomeRow}
       `
     );
@@ -59,10 +57,5 @@ const sendErrorMessage = (error) => {
     bot.sendMessage(chatId, `🚨 ${mes.coin} вышел из чата. ${mes.error}\n`);
   });
 };
-
-// const error = {
-//   coin: '',
-//   error: 'Шеф, всё пропало!',
-// }
 
 module.exports = { sendBot, sendErrorMessage };
