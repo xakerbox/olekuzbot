@@ -2,6 +2,7 @@ const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
 const { rounder } = require("../utils/rounder");
+const { showTier } = require ('../utils/tiers')
 const {
   orderBinance,
   checkOrderStatus,
@@ -20,7 +21,7 @@ require("dotenv").config({
 //////////////////////////////////////////////
 
 const coinName = "RVNUSDT";
-let stackValue = 72;
+let stackValue = 74;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 2.7, 6, 10];
@@ -79,11 +80,6 @@ const timer = async () => {
 const getRates = async () => {
   try {
     // const { data: response } = await axios.get(testUrl); // Local test endpoint
-
-    // const { data: response } = await axios.get(BYBIT_URL_GET_RATES); // ByBit Prod Get Rates
-    // lastPrice = +response.result[0].last_price; // ByBit Prod Get Rates
-    // bufferPrice = +response.result[0].last_price; // ByBit Prod Get Rates
-
     const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
 
     lastPrice = +response.price; // Binance Prod Get Rates
@@ -93,7 +89,6 @@ const getRates = async () => {
     // lastPrice = response.price; // Local Test
     // bufferPrice = response.price; // Local Test
     // return response.price; // Local Test
-
     // return +response.result[0].last_price; // ByBit Prod endpoint
     return +response.price;
   } catch (e) {
@@ -178,20 +173,12 @@ async function main() {
     coinsQntMessage = coinsQuantity[0];
   }
 
-  console.log(`======COIN ====> ${coinName} <=======COIN=======`);
+  console.log(`===COIN ==> ${coinName} <==COIN===`);
   console.log("Цены усреднений:", coinsPrices);
   console.log("Будет куплено монет: ", coinsQuantity);
 
-  spentMoney.forEach((summ, index) => {
-    console.log(
-      `${index} у., курс закупки: ${rounder(
-        summ / coinsQuantity[index],
-        decimals
-      )}`
-    );
-  });
+  showTier(currentTier);
 
-  console.log(`Потрачено на все монеты: $${spentMoney}`);
   console.log(`Курс сейчас: $${rounder(currentPrice, decimals)}`);
 
   summSpentOnAllCoins = spentMoney.reduce((acc, curr, index) => {

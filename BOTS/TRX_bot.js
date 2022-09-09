@@ -2,6 +2,7 @@ const axios = require("axios");
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
 const { rounder } = require("../utils/rounder");
+const { showTier } = require ('../utils/tiers')
 const {
   orderBinance,
   checkOrderStatus,
@@ -20,12 +21,12 @@ require("dotenv").config({
 //////////////////////////////////////////////
 
 const coinName = "TRXUSDT";
-let stackValue = 70;
+let stackValue = 74;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.5, 1.1, 2.1, 4, 10];
-const fixingIncomeValue = 1.003;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const middleSplitter = [0.6, 1.3, 2.7, 6, 10];
+const fixingIncomeValue = 1.0038;
+const decimals = 4; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -79,14 +80,8 @@ const timer = async () => {
 const getRates = async () => {
   try {
     // const { data: response } = await axios.get(testUrl); // Local test endpoint
-
-    // const { data: response } = await axios.get(BYBIT_URL_GET_RATES); // ByBit Prod Get Rates
-    // lastPrice = +response.result[0].last_price; // ByBit Prod Get Rates
-    // bufferPrice = +response.result[0].last_price; // ByBit Prod Get Rates
-
     const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
 
-    console.log("NEW RESPONSE", response);
     lastPrice = +response.price; // Binance Prod Get Rates
     bufferPrice = +response.price; // Binance Prod Get Rates
 
@@ -94,7 +89,6 @@ const getRates = async () => {
     // lastPrice = response.price; // Local Test
     // bufferPrice = response.price; // Local Test
     // return response.price; // Local Test
-
     // return +response.result[0].last_price; // ByBit Prod endpoint
     return +response.price;
   } catch (e) {
@@ -179,20 +173,12 @@ async function main() {
     coinsQntMessage = coinsQuantity[0];
   }
 
-  console.log(`======COIN ====> ${coinName} <=======COIN=======`);
+  console.log(`===COIN ==> ${coinName} <==COIN===`);
   console.log("Цены усреднений:", coinsPrices);
   console.log("Будет куплено монет: ", coinsQuantity);
 
-  spentMoney.forEach((summ, index) => {
-    console.log(
-      `${index} у., курс закупки: ${rounder(
-        summ / coinsQuantity[index],
-        decimals
-      )}`
-    );
-  });
+  showTier(currentTier);
 
-  console.log(`Потрачено на все монеты: $${spentMoney}`);
   console.log(`Курс сейчас: $${rounder(currentPrice, decimals)}`);
 
   summSpentOnAllCoins = spentMoney.reduce((acc, curr, index) => {
@@ -217,12 +203,12 @@ async function main() {
     coinsQuantity.reduce((acc, curr, index) => acc + curr * currentTier[index]);
 
   console.log("Средняя цена: $",rounder(+priceToSell, decimals));
-
+  console.log("Торговый стек (накоп.):", stackValue)
   console.log("Всего закупок: ", zakupka, "\n");
   console.log("Уровни усреднение: ", workedTiers);
   console.log("Размер стека (по бирже):", actualBoughtCoins);
 
-  console.log("ВРЕМЯ:", currentTime);
+  console.log("⏱", currentTime);
 
   if (sendMessageTrigger === 1) {
     let message = {
@@ -243,24 +229,8 @@ async function main() {
   console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", rounder(ourWillingPrice,5));
 
   if (currentPrice >= ourWillingPrice) {
-    // await orderBybit(+quantityOfBoughtCoins, coinName, "Sell"); //  ByBit Prod endpoint
     const preSellCheckQntCoins = await getQntCoinsInPosition(coinName);
-    await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
-
-    let message = {
-      operation: "Продано",
-      coin: coinName,
-      qnt: quantityOfBoughtCoins,
-      price: currentPrice,
-      summ: quantityOfBoughtCoins * currentPrice,
-      tier: "Продажа.",
-      dirtyIncome: {
-        sellOn: quantityOfBoughtCoins * currentPrice,
-        boughtOn: summSpentOnAllCoins,
-      },
-    };
-
-    sendBot(message);
+    const {avgPrice, origQty, stopPrice } = await orderBinance(preSellCheckQntCoins, coinName, "Sell"); // Binance Prod endpoint
 
     startCounter = 0;
     zeroBuyCounter = 0;
@@ -283,6 +253,21 @@ async function main() {
     const totalPNL = await getBalance(coinName);
     stackValue = stackValue + +totalPNL / 2;
 
+    let message = {
+        operation: "Продано",
+        coin: coinName,
+        qnt: +origQty,
+        price: +stopPrice,
+        summ: (+stopPrice)/(+origQty),
+        tier: "🔴 Продажа",
+        dirtyIncome: {
+          sellOn: rounder(totalPNL, 3),
+          boughtOn: summSpentOnAllCoins,
+        },
+      };
+
+    sendBot(message);
+
     tier = "Start";
 
     return;
@@ -298,7 +283,7 @@ async function main() {
 
     coinsQntMessage = coinsQuantity[1];
     sendMessageTrigger = 1;
-    tier = "1 усреднение";
+    tier = "1️⃣ усреднение";
 
     return;
   }
@@ -313,7 +298,7 @@ async function main() {
 
     coinsQntMessage = coinsQuantity[2];
     sendMessageTrigger = 1;
-    tier = "2 усреднение";
+    tier = "2️⃣ усреднение";
 
     return;
   }
@@ -328,7 +313,7 @@ async function main() {
     coinsQntMessage = coinsQuantity[3];
 
     sendMessageTrigger = 1;
-    tier = "3 усреднение";
+    tier = "3️⃣ усреднение";
 
     return;
   }
@@ -344,7 +329,7 @@ async function main() {
     coinsQntMessage = coinsQuantity[4];
 
     sendMessageTrigger = 1;
-    tier = "4 усреднение";
+    tier = "4️⃣ усреднение";
 
     return;
   }
@@ -360,7 +345,7 @@ async function main() {
     coinsQntMessage = coinsQuantity[5];
 
     sendMessageTrigger = 1;
-    tier = "5 усреднение";
+    tier = "5️⃣ усреднение";
 
     return;
   }
