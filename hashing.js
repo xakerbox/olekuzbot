@@ -1,9 +1,9 @@
 const crypto = require("crypto");
 const axios = require("axios");
-require("dotenv").config({
-  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
-});
-// require("dotenv").config(); // LOCAL TEST
+// require("dotenv").config({
+//   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+// });
+require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
@@ -133,9 +133,6 @@ const getQntCoinsInPosition = async (symbol) => {
   return +result[0].positionAmt;
 };
 
-// checkOrderStatus("ADAUSDT", 24162380190);
-// orderBinance(21, "CHZUSDT", "Buy");
-
 const getAllOpened = async () => {
   const { positions } = await binance.futuresAccount();
   const openedPositions = positions.filter(
@@ -149,10 +146,13 @@ const getAllOpened = async () => {
       unrealizedProfit: +position.unrealizedProfit,
     };
   });
+
+  const sorted = result.sort((a,b) => b.unrealizedProfit - a.unrealizedProfit)
+
   let response = [];
-  result.forEach((coin) => {
+  sorted.forEach((coin) => {
     response.push(
-      `\n   🪙 ${coin.positionAmt} ${coin.symbol} (MP: ${coin.entryPrice.toFixed(5)}), PNL: $${coin.unrealizedProfit.toFixed(3)}`
+      `\n   🪙 ${coin.positionAmt} ${coin.symbol} | PNL: $${coin.unrealizedProfit.toFixed(3)}`
     );
   });
   return `В работе ${response.length} монет:\n${response}`;
@@ -164,9 +164,9 @@ const getWalletBalance = async () => {
 
   const message = `🏦🏦🏦🏦🏦🏦🏦🏦🏦\n\nБаланс кошелька: $${Math.round(+cleanRes[0].balance*100)/100},\nНереализ PNL: $${Math.round(+cleanRes[0].crossUnPnl*100)/100}`
   return message;
-
 }
 
+getAllOpened();
 
 module.exports = {
   orderBinance,

@@ -1,15 +1,10 @@
-let startDepo = 20000;
-let i = 1;
+const dreamCalc = (startDepo, finalGoal, dayProfit) => {
+  let i = 1;
+  while (startDepo <= finalGoal) {
+    startDepo = startDepo + startDepo * (dayProfit / 100);
+    i++;
+  }
+  return i;
+};
 
-// const increaser = (startDepo) => {
-//   startDepo = startDepo * 1.004;
-// }
-while (startDepo <= 100000) {
-  startDepo = startDepo  + startDepo* 0.005;
-  console.log(`День: ${i}, баланс: ${startDepo}`);
-  i++
-}
-
-
-
-
+module.exports = { dreamCalc };
