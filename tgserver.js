@@ -8,54 +8,62 @@ const bot = new TelegramBot(token, { polling: true });
 
 let constant = 0;
 
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
+bot.setMyCommands([{
+  command: '/start', description: 'Я сказала стартуем!'
+},
+])
 
-  bot.sendMessage(chatId, "Чё надо?", {
+bot.onText(/\/start/, async (msg) => {
+  await bot.sendMessage(msg.chat.id, "Чё надо?", {
     reply_markup: {
-      keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["CALC"]],
+      keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["🤌 CALC 🤌"]],
     },
+    parse_mode: 'HTML',
+    disable_web_page_preview: true,
   });
+});
 
 
-  bot.on("message", async (msg) => {
+bot.on("message", async (msg) => {
 
-    if (msg.text === "🪙 COINS 🪙") {
-      bot.sendMessage(chatId, await getAllOpened());
-    }
+  if (msg.text === "🪙 COINS 🪙") {
+    await bot.sendMessage(msg.chat.id, await getAllOpened(), {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+    });
+  }
 
-    if (msg.text === "🏦 BALANCE 🏦") {
-      bot.sendMessage(chatId, await getWalletBalance());
-    }
+  if (msg.text === "🏦 BALANCE 🏦") {
+    await bot.sendMessage(msg.chat.id, await getWalletBalance());
+  }
 
-    if (msg.text === "CALC") {
-      await bot.sendMessage(
-        chatId,
-        "Введи данные через запятую в формате: \n СТАРТ_ДЕПО, ЖЕЛАЕМЫЙ_ДЕПО, СУТОЧНЫЙ ПРОЦЕНТ\n\nПример:\n1000, 1000, 0.5\n", {
-        reply_markup: {
-          keyboard: [["ВЫЙТИ"]],
-        }
-      })
+  if (msg.text === 'ВЫЙТИ') {
+    constant = 0;
+    await bot.sendMessage(msg.chat.id, 'Выходим...', {
+      reply_markup: {
+        keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["🤌 CALC 🤌"]],
+      }
+    })
+    return
+  }
 
-      constant = 1;
-      return
-    }
+  if (constant === 1) {
+    const data = msg.text.trim().split(',');
+    await bot.sendMessage(msg.chat.id, `Миллионером будешь через ${dreamCalc(+data[0], +data[1], +data[2])} дней(я)!`);
+    constant = 0;
+    return
+  }
 
-    if (msg.text === 'ВЫЙТИ') {
-      bot.sendMessage(chatId, 'Выходим...', {
-        reply_markup: {
-          keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["CALC"]],
-        }
-      })
-    }
+  if (msg.text === "🤌 CALC 🤌") {
+    await bot.sendMessage(
+      msg.chat.id,
+      "Введи данные через запятую в формате: \n СТАРТ_ДЕПО, ЖЕЛАЕМЫЙ_ДЕПО, СУТОЧНЫЙ ПРОЦЕНТ\n\nПример:\n1000, 1000, 0.5\n", {
+      reply_markup: {
+        keyboard: [["ВЫЙТИ"]],
+      }
+    })
 
-
-    if (constant === 1) {
-      const data = msg.text.trim().split(',');
-      bot.sendMessage(chatId, `Миллионером будешь через ${dreamCalc(+data[0], +data[1], +data[2])} дней(я)!`);
-      constant = 0;
-      return
-    }
-  });
-
+    constant = 1;
+    return
+  }
 });

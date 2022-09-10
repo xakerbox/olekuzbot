@@ -152,10 +152,10 @@ const getAllOpened = async () => {
   let response = [];
   sorted.forEach((coin) => {
     response.push(
-      `\n   🪙 ${coin.positionAmt} ${coin.symbol} | PNL: $${coin.unrealizedProfit.toFixed(3)}`
+      `\n   🪙 <b>${coin.positionAmt}</b> <a href='https://www.binance.com/en/futures/${coin.symbol}usdt'>${coin.symbol}</a> | PNL: $${coin.unrealizedProfit.toFixed(3)}`
     );
   });
-  return `В работе ${response.length} монет:\n${response}`;
+  return `В работе <b>${response.length} монет</b>:\n${response}`;
 };
 
 const getWalletBalance = async () => {
@@ -166,7 +166,17 @@ const getWalletBalance = async () => {
   return message;
 }
 
-getAllOpened();
+const getCurrentBalance = async () => {
+    const result =  await binance.futuresBalance();
+    const cleanRes = result.filter(el => el.asset = 'USDT' && el.balance > 500);
+    const valueToStore = `${format(
+      new Date(),
+      "dd.MM HH:mm:ss"
+    )},${Math.round(+cleanRes[0].balance*100)/100}\n`;
+    fs.appendFileSync('./balanceHistory.csv', valueToStore)
+    return 
+}
+
 
 module.exports = {
   orderBinance,
@@ -176,4 +186,5 @@ module.exports = {
   getQntCoinsInPosition,
   getAllOpened,
   getWalletBalance,
+  getCurrentBalance,
 };
