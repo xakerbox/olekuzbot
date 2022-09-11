@@ -21,7 +21,7 @@ require("dotenv").config({
 //////////////////////////////////////////////
 
 const coinName = "CRVUSDT";
-let stackValue = 73;
+let stackValue = 76;
 const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 2.7, 6, 10];

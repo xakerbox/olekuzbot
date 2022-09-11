@@ -1,9 +1,9 @@
 const crypto = require("crypto");
 const axios = require("axios");
-// require("dotenv").config({
-//   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
-// });
-require("dotenv").config(); // LOCAL TEST
+require("dotenv").config({
+  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+});
+// require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
