@@ -1,6 +1,7 @@
 const TelegramBot = require("node-telegram-bot-api");
 const { getAllOpened, getWalletBalance } = require("./hashing");
 const { dreamCalc } = require("./dreamCalc");
+const { getDailyBalance } = require("./utils/balanceReporter")
 
 const token = "5405704788:AAFFoHQJj_st8Lyo3ufi6Eo-bBulirLN3sA";
 const chatIds = [165564370, 535043367]; // 535043367
@@ -16,7 +17,7 @@ bot.setMyCommands([{
 bot.onText(/\/start/, async (msg) => {
   await bot.sendMessage(msg.chat.id, "Чё надо?", {
     reply_markup: {
-      keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["🤌 CALC 🤌"]],
+      keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["🤌 CALC 🤌"], ["⏰ PROFIT ЗА СЕГОДНЯ ⏰"]],
     },
     parse_mode: 'HTML',
     disable_web_page_preview: true,
@@ -41,7 +42,7 @@ bot.on("message", async (msg) => {
     constant = 0;
     await bot.sendMessage(msg.chat.id, 'Выходим...', {
       reply_markup: {
-        keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["🤌 CALC 🤌"]],
+        keyboard: [["🏦 BALANCE 🏦"], ["🪙 COINS 🪙"], ["🤌 CALC 🤌"], ['⏰ PROFIT ЗА СЕГОДНЯ ⏰']],
       }
     })
     return
@@ -65,5 +66,9 @@ bot.on("message", async (msg) => {
 
     constant = 1;
     return
+  }
+
+  if (msg.text === '⏰ PROFIT ЗА СЕГОДНЯ ⏰') {
+    await bot.sendMessage(msg.chat.id, `За сегодня боты принесли: ${getDailyBalance()}`)
   }
 });
