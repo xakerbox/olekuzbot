@@ -69,6 +69,6 @@ bot.on("message", async (msg) => {
   }
 
   if (msg.text === '⏰ PROFIT ЗА СЕГОДНЯ ⏰') {
-    await bot.sendMessage(msg.chat.id, `За сегодня боты принесли: ${getDailyBalance()}`)
+    await bot.sendMessage(msg.chat.id, `За сегодня боты принесли: $${getDailyBalance()}`)
   }
 });
