@@ -25,7 +25,7 @@ const getDailyBalance = async () => {
   const lastBalance = mappedBalances.slice(-1);
   const [{ balance: nightB }] = midnightBalance;
   const [{ balance: lastB }] = lastBalance[0].slice(-1);
-  console.log("last", lastBalance[0].slice(-1));
+  console.log("last", ...lastBalance[0].slice(-1));
   const dailyProfit = lastB - nightB;
   return Math.round(dailyProfit * 100) / 100;
 };

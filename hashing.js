@@ -162,7 +162,7 @@ const getWalletBalance = async () => {
   const result =  await binance.futuresBalance();
   const cleanRes = result.filter(el => el.asset = 'USDT' && el.balance > 500);
 
-  const message = `🏦🏦🏦🏦🏦🏦🏦🏦🏦\n\nБаланс кошелька: $${Math.round(+cleanRes[0].balance*100)/100},\nНереализ PNL: $${Math.round(+cleanRes[0].crossUnPnl*100)/100}`
+  const message = `\n\n🏦 Баланс кошелька: $${Math.round(+cleanRes[0].balance*100)/100},\nНереализ PNL: $${Math.round(+cleanRes[0].crossUnPnl*100)/100}`
   return message;
 }
 
