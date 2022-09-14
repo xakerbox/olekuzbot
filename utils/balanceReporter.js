@@ -16,17 +16,18 @@ const getDailyBalance = async () => {
   ]);
 
   const dateNow = format(new Date(), "dd.MM");
+  console.log('date now', dateNow);
   const midnightBalance = mappedBalances[0].filter(
     (el) =>
       (el.date === dateNow && el.time === "00:00:00") ||
       el.time === "00:00:01" ||
       el.time === "00:00:02"
   );
-  const lastBalance = mappedBalances.slice(-1);
-  const [{ balance: nightB }] = midnightBalance;
-  const [{ balance: lastB }] = lastBalance[0].slice(-1);
-  console.log("last", ...lastBalance[0].slice(-1));
-  const dailyProfit = lastB - nightB;
+  const lastBalance = midnightBalance.slice(-1);
+  const [{ balance: nightB }] = lastBalance;
+  const [{ balance: lastB }] = mappedBalances[0].slice(-1);
+  console.log('Actual balance:', lastBalance);
+  const dailyProfit = +lastB - +nightB;
   return Math.round(dailyProfit * 100) / 100;
 };
 
