@@ -20,13 +20,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "RVNUSDT";
+const coinName = "DYDXUSDT";
 let stackValue = 92;
-// const stackSize = stackValue * 10;
+const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 3, 7, 12];
 const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const decimals = 3; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -123,7 +123,7 @@ const startTrade = async (coinsBuyQnt) => {
       coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
       coinsQuantity = await countStartCoinsValue(
         coinsPrices,
-        stackValue * 10,
+        stackSize,
         stackDevider
       );
     }
@@ -147,7 +147,7 @@ async function main() {
     coinsPrices = await buyPriceValues(+currentPrice, middleSplitter);
     coinsQuantity = await countStartCoinsValue(
       coinsPrices,
-      stackValue * 10,
+      stackSize,
       stackDevider
     );
 
