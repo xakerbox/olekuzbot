@@ -7,6 +7,7 @@ require("dotenv").config({
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
+const { checkRunBot } = require("./utils/checkrun");
 
 const bybit_api_key = process.env.BYBIT_API_KEY;
 const bybit_secret = process.env.BYBIT_SECRET_KEY;
@@ -147,36 +148,46 @@ const getAllOpened = async () => {
     };
   });
 
-  const sorted = result.sort((a,b) => b.unrealizedProfit - a.unrealizedProfit)
+  const sorted = result.sort((a, b) => b.unrealizedProfit - a.unrealizedProfit);
 
   let response = [];
   sorted.forEach((coin) => {
+    const checkRun = checkRunBot(coin);
+    const status = checkRun ? "🟢" : "🔴";
     response.push(
-      `\n   🪙 <b>${coin.positionAmt}</b> <a href='https://www.binance.com/en/futures/${coin.symbol}usdt'>${coin.symbol}</a> | PNL: $${coin.unrealizedProfit.toFixed(3)}`
+      `\n   ${status} <b>${
+        coin.positionAmt
+      }</b> <a href='https://www.binance.com/en/futures/${coin.symbol}usdt'>${
+        coin.symbol
+      }</a> | PNL: $${coin.unrealizedProfit.toFixed(3)}`
     );
   });
   return `В работе <b>${response.length} монет</b>:\n${response}`;
 };
 
 const getWalletBalance = async () => {
-  const result =  await binance.futuresBalance();
-  const cleanRes = result.filter(el => el.asset = 'USDT' && el.balance > 500);
+  const result = await binance.futuresBalance();
+  const cleanRes = result.filter(
+    (el) => (el.asset = "USDT" && el.balance > 500)
+  );
 
-  const message = `\n\n🏦 Баланс кошелька: $${Math.round(+cleanRes[0].balance*100)/100},\nНереализ PNL: $${Math.round(+cleanRes[0].crossUnPnl*100)/100}`
+  const message = `\n\n🏦 Баланс кошелька: $${
+    Math.round(+cleanRes[0].balance * 100) / 100
+  },\nНереализ PNL: $${Math.round(+cleanRes[0].crossUnPnl * 100) / 100}`;
   return message;
-}
+};
 
 const getCurrentBalance = async () => {
-    const result =  await binance.futuresBalance();
-    const cleanRes = result.filter(el => el.asset = 'USDT' && el.balance > 500);
-    const valueToStore = `${format(
-      new Date(),
-      "dd.MM HH:mm:ss"
-    )},${Math.round(+cleanRes[0].balance*100)/100}\n`;
-    fs.appendFileSync('./balanceHistory.csv', valueToStore)
-    return 
-}
-
+  const result = await binance.futuresBalance();
+  const cleanRes = result.filter(
+    (el) => (el.asset = "USDT" && el.balance > 500)
+  );
+  const valueToStore = `${format(new Date(), "dd.MM HH:mm:ss")},${
+    Math.round(+cleanRes[0].balance * 100) / 100
+  }\n`;
+  fs.appendFileSync("./balanceHistory.csv", valueToStore);
+  return;
+};
 
 module.exports = {
   orderBinance,
