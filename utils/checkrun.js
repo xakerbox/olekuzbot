@@ -1,6 +1,6 @@
 const { exec } = require("child_process");
 
-const checkRunBot = (coinName) => {
+const checkRunBot = async (coinName) => {
   let result;
   exec(`ps aux | grep ${coinName}_bot | grep node`, (error, stdout, stderr) => {
     if (stdout) {
@@ -9,6 +9,8 @@ const checkRunBot = (coinName) => {
     }
     return false;
   });
+
+  console.log(result);
 };
 
 module.exports = { checkRunBot };
