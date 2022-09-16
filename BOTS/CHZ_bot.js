@@ -20,7 +20,7 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "DYDXUSDT";
+const coinName = "CHZUSDT";
 let stackValue = 92;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;

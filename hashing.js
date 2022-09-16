@@ -3,6 +3,7 @@ const axios = require("axios");
 require("dotenv").config({
   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
 });
+const { getRunnedOrNot } = require('./utils/checkrun')
 // require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
@@ -151,17 +152,17 @@ const getAllOpened = async () => {
   const sorted = result.sort((a, b) => b.unrealizedProfit - a.unrealizedProfit);
 
   let response = [];
-  sorted.forEach((coin) => {
-    const checkRun = checkRunBot(coin);
-    const status = checkRun ? "🟢" : "🔴";
+
+  for (coin of sorted) {
+    const stat = await getRunnedOrNot(coin);
     response.push(
-      `\n   ${status} <b>${
+      `\n   ${stat} <b>${
         coin.positionAmt
       }</b> <a href='https://www.binance.com/en/futures/${coin.symbol}usdt'>${
         coin.symbol
       }</a> | PNL: $${coin.unrealizedProfit.toFixed(3)}`
     );
-  });
+  }
   return `В работе <b>${response.length} монет</b>:\n${response}`;
 };
 
