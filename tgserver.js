@@ -1,15 +1,18 @@
 const TelegramBot = require("node-telegram-bot-api");
-const { getAllOpened, getWalletBalance } = require("./hashing");
+const { getAllOpened, getWalletBalance, getPossitionsInWorkOnBinance } = require("./hashing");
 const { dreamCalc } = require("./dreamCalc");
 const { getDailyBalance } = require("./utils/balanceReporter")
 const format = require('date-fns/format')
-const { getAllRun } = require('./utils/checkrun')
+const { getAllRun } = require('./utils/checkrun');
 
 const token = "5405704788:AAFFoHQJj_st8Lyo3ufi6Eo-bBulirLN3sA";
 const chatIds = [165564370, 535043367]; // 535043367
 const bot = new TelegramBot(token, { polling: true });
 
 let constant = 0;
+let allRunnedProcesses;
+let allNamesOfRunnedCoins;
+
 const keyboard = [["🏦 BALANCE 🏦", "🪙 COINS 🪙"], ["🤌 CALC 🤌"], ["⏰ PROFIT ЗА СЕГОДНЯ ⏰"], ['🛠 ОСТАНОВИТЬ РАБОТЯГУ 🛠']];
 
 bot.setMyCommands([{
@@ -72,11 +75,28 @@ bot.on("message", async (msg) => {
   }
 
   if (msg.text === '🛠 ОСТАНОВИТЬ РАБОТЯГУ 🛠') {
-    const botsInWork = await getAllRun();
-    console.log(botsInWork);
-    await bot.sendMessage(msg.chat.id, '', {
+    const allCoinsInStack = await getPossitionsInWorkOnBinance();
+    const runnedString = [];
+    for (let coin of allCoinsInStack) {
+      const botsInWork = await getAllRun(coin);
+      if (botsInWork) runnedString.push(...botsInWork);
+    }
+
+    // if (!runnedString.length) {
+      allRunnedProcesses = runnedString.map(process => {
+        return process.trim().replace(/\s{2,10}/g, ' ').split(' ')[1];
+        
+      })
+
+      allNamesOfRunnedCoins = runnedString.map(process => {
+        return '💀 ' + process.trim().replace(/\s{2,10}/g, ' ').split(' ')[11].slice(0,-4) + ' 💀';
+      })
+
+      console.log(allRunnedProcesses);
+      
+    await bot.sendMessage(msg.chat.id, '🍺 Выбирай, кому пора на отдых.', {
       reply_markup: {
-        keyboard: [botsInWork],
+        keyboard: [allNamesOfRunnedCoins],
       }}
       )
   }

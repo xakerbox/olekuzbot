@@ -1,10 +1,10 @@
 const crypto = require("crypto");
 const axios = require("axios");
-// require("dotenv").config({
-//   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
-// });
+require("dotenv").config({
+  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+});
 const { getRunnedOrNot } = require('./utils/checkrun')
-require("dotenv").config(); // LOCAL TEST
+// require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
@@ -127,6 +127,19 @@ const getQntCoinsInPosition = async (symbol) => {
   return +result[0].positionAmt;
 };
 
+const getPossitionsInWorkOnBinance = async () => {
+  const { positions } = await binance.futuresAccount();
+  const openedPositions = positions.filter(
+    (position) => +position.positionAmt != 0
+  );
+
+  const result = openedPositions.map((position) => {
+    return {symbol: position.symbol.slice(0, -4)};
+  });
+
+  return result;
+}
+
 const getAllOpened = async () => {
   const { positions } = await binance.futuresAccount();
   const openedPositions = positions.filter(
@@ -193,4 +206,5 @@ module.exports = {
   getAllOpened,
   getWalletBalance,
   getCurrentBalance,
+  getPossitionsInWorkOnBinance,
 };
