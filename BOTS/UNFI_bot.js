@@ -20,13 +20,14 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ROSEUSDT";
-let stackValue = 92;
+const coinName = "UNFIUSDT";
+let stackValue = 90;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 3, 7, 12];
-const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const fixingIncomeValue = 1.0042;
+const decimals = 6; // Количество знаков после запятой в округлениях.
+const delayBetweenRequest = 500;
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
@@ -73,7 +74,7 @@ const timer = async () => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve("");
-    }, 2000);
+    }, delayBetweenRequest);
   });
 };
 
@@ -81,7 +82,7 @@ const getRates = async () => {
   try {
     // const { data: response } = await axios.get(testUrl); // Local test endpoint
     const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
-
+    console.log('CURRENT TEST PRICE:', +response.price);
     lastPrice = +response.price; // Binance Prod Get Rates
     bufferPrice = +response.price; // Binance Prod Get Rates
 
@@ -110,9 +111,7 @@ const startTrade = async (coinsBuyQnt) => {
       const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
       console.log('ORDER ID:', orderId);
       realOrderPrice = await checkOrderStatus(coinName, orderId);
-  
-      priceToSell = await getAverageOnPosition(coinName);
-  
+    
       console.log("Реальный курс сделки: ", realOrderPrice);
     } catch(e) {
       console.log(e);
@@ -154,11 +153,7 @@ async function main() {
     console.log('START TRADE INVOKE:', currentPrice, middleSplitter, coinsPrices, coinsQuantity);
 
 
-    spentMoney[0] = await startTrade(
-      coinsQuantity[0],
-      "Start",
-      currentPrice * fixingIncomeValue
-    );
+    spentMoney[0] = await startTrade(coinsQuantity[0]);
     spentMoney[0] = rounder(spentMoney[0], decimals); // Math.round(spentMoney[0] * 100000) / 100000;
     currentTier[0] = 1;
     zeroBuyCounter = 1;
@@ -224,9 +219,10 @@ async function main() {
 
     sendMessageTrigger = 0;
   }
+  priceToSell = await getAverageOnPosition(coinName);
 
-  const ourWillingPrice = +priceToSell * fixingIncomeValue;
-  console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", rounder(ourWillingPrice,5));
+  const ourWillingPrice = priceToSell * fixingIncomeValue;
+  console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", rounder(ourWillingPrice, 6));
 
   if (currentPrice >= ourWillingPrice) {
     const preSellCheckQntCoins = await getQntCoinsInPosition(coinName);

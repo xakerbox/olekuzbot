@@ -26,7 +26,7 @@ let stackValue = 92;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 3, 7, 12];
 const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const decimals = 3; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell

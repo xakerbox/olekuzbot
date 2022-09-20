@@ -190,6 +190,8 @@ const getCurrentBalance = async () => {
   return;
 };
 
+getAverageOnPosition('REEFUSDT')
+
 module.exports = {
   orderBinance,
   checkOrderStatus,

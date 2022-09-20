@@ -21,7 +21,7 @@ require("dotenv").config({
 //////////////////////////////////////////////
 
 const coinName = "RVNUSDT";
-let stackValue = 92;
+let stackValue = 95;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 3, 7, 12];

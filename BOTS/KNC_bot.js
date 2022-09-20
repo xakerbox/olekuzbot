@@ -20,13 +20,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "TRXUSDT";
-let stackValue = 92;
+const coinName = "KNCUSDT";
+let stackValue = 70;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.3, 3, 7, 12];
-const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const fixingIncomeValue = 1.005;
+const decimals = 3; // Количество знаков после запятой в округлениях.
 
 // const secondBuyPause = 5; // seconds from last sell
 // const thirdBuyPause = 30; //seconds from last sell
