@@ -1,10 +1,10 @@
 const crypto = require("crypto");
 const axios = require("axios");
-require("dotenv").config({
-  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
-});
+// require("dotenv").config({
+//   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+// });
 const { getRunnedOrNot } = require('./utils/checkrun')
-// require("dotenv").config(); // LOCAL TEST
+require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
@@ -91,13 +91,6 @@ const checkOrderStatus = async (SYMBOL, orderId) => {
   const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
     orderId,
   });
-  // const resp = await binance.futuresOrderStatus(SYMBOL, {
-  //   orderId,
-  // });
-
-  // console.log(resp);
-
-  // return resp
 
   return avgPrice;
 };
@@ -106,9 +99,8 @@ const getAverageOnPosition = async (symbol) => {
   const { positions } = await binance.futuresAccount();
   const resultResponse = positions.filter((el) => el.symbol === symbol);
 
-  console.log(resultResponse);
-
   const avrPrice = +resultResponse[0].entryPrice;
+  console.log(avrPrice);
 
   return avrPrice;
 };
@@ -190,7 +182,7 @@ const getCurrentBalance = async () => {
   return;
 };
 
-getAverageOnPosition('REEFUSDT')
+// getAverageOnPosition('DOGEUSDT')
 
 module.exports = {
   orderBinance,

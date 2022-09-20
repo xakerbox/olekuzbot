@@ -19,7 +19,7 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "UNFIUSDT";
+const coinName = "REEFUSDT";
 let stackValue = 90;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
