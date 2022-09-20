@@ -11,4 +11,13 @@ const getRunnedOrNot = async (coin) => {
   return status;
 };
 
-module.exports = { getRunnedOrNot };
+const getAllRun = async (coin) => {
+  const { stdout } = await exec("ps aux");
+  const allRunsBot = stdout
+    .split("\n")
+    .filter((el) => el.includes(`node ${coin.symbol}_bot`));
+
+  return allRunsBot;
+};
+
+module.exports = { getRunnedOrNot, getAllRun };

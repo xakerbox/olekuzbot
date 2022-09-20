@@ -3,13 +3,14 @@ const { getAllOpened, getWalletBalance } = require("./hashing");
 const { dreamCalc } = require("./dreamCalc");
 const { getDailyBalance } = require("./utils/balanceReporter")
 const format = require('date-fns/format')
+const { getAllRun } = require('./utils/checkrun')
 
 const token = "5405704788:AAFFoHQJj_st8Lyo3ufi6Eo-bBulirLN3sA";
 const chatIds = [165564370, 535043367]; // 535043367
 const bot = new TelegramBot(token, { polling: true });
 
 let constant = 0;
-const keyboard = [["🏦 BALANCE 🏦", "🪙 COINS 🪙"], ["🤌 CALC 🤌"], ["⏰ PROFIT ЗА СЕГОДНЯ ⏰"]];
+const keyboard = [["🏦 BALANCE 🏦", "🪙 COINS 🪙"], ["🤌 CALC 🤌"], ["⏰ PROFIT ЗА СЕГОДНЯ ⏰"], ['🛠 ОСТАНОВИТЬ РАБОТЯГУ 🛠']];
 
 bot.setMyCommands([{
   command: '/start', description: 'Я сказала стартуем!'
@@ -68,6 +69,16 @@ bot.on("message", async (msg) => {
 
     constant = 1;
     return
+  }
+
+  if (msg.text === '🛠 ОСТАНОВИТЬ РАБОТЯГУ 🛠') {
+    const botsInWork = await getAllRun();
+    console.log(botsInWork);
+    await bot.sendMessage(msg.chat.id, '', {
+      reply_markup: {
+        keyboard: [botsInWork],
+      }}
+      )
   }
 
   if (msg.text === '⏰ PROFIT ЗА СЕГОДНЯ ⏰') {
