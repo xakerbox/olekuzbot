@@ -19,13 +19,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "REEFUSDT";
+const coinName = "KAVAUSDT";
 let stackValue = 90;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.6, 1.3, 3, 7, 12];
-const fixingIncomeValue = 1.0042;
-const decimals = 6; // Количество знаков после запятой в округлениях.
+const middleSplitter = [0.7, 1.5, 4, 8, 13];
+const fixingIncomeValue = 1.0038;
+const decimals = 4; // Количество знаков после запятой в округлениях.
 const delayBetweenRequest = 500;
 
 const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;

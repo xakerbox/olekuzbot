@@ -20,4 +20,8 @@ const getAllRun = async (coin) => {
   return allRunsBot;
 };
 
-module.exports = { getRunnedOrNot, getAllRun };
+const killBot = async (pid) => {
+  await exec(`sudo -S <<< 1900 kill -9 ${pid}`);
+}
+
+module.exports = { getRunnedOrNot, getAllRun, killBot };

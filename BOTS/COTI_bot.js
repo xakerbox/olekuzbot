@@ -19,11 +19,11 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "KNCUSDT";
+const coinName = "COTIUSDT";
 let stackValue = 90;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.7, 1.5, 4, 8, 13];
+const middleSplitter = [0.6, 1.3, 3, 7, 12];
 const fixingIncomeValue = 1.0038;
 const decimals = 5; // Количество знаков после запятой в округлениях.
 const delayBetweenRequest = 500;
