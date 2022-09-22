@@ -46,4 +46,15 @@ const countStartCoinsValue = async (
 };
 
 
+const middleSplitter = [0.7, 1.5, 4, 8, 13];
+const stackValue = 90;
+
+(async () => {
+  const buyPriceArray = await buyPriceValues(4.783, middleSplitter);
+  const coinsQuantity = await countStartCoinsValue(buyPriceArray, stackValue * 10, 30);
+  console.log(buyPriceArray, coinsQuantity);
+})()
+
+
+
 module.exports = { buyPriceValues, countStartCoinsValue };

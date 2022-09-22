@@ -27,95 +27,99 @@ const BASE_BINANCE_URI_ORDER = process.env.BINANCE_BASE_URI_ORDER;
 // const BASE_URI_SELL = "https://api.bybit.com/private/linear/order/cancel?";
 // const BASE_URI_WALLET = "https://api.bybit.com/v2/private/wallet/balance?";
 
-const hashParams = (params, secret) => {
-  return crypto.createHmac("sha256", secret).update(params).digest("hex");
-};
-
-// const orderBybit = async (qntCoins, SYMBOL, operation) => {
-//   reduceParam = operation === "Buy" ? false : true;
-
-//   console.log("QUANTITY COINS:", qntCoins);
-//   console.log("SYMBOL:", SYMBOL);
-//   console.log("OPERATION:", operation);
-
-//   const params = `api_key=${bybit_api_key}&close_on_trigger=false&order_type=Market&qty=${qntCoins}&reduce_only=${reduceParam}&side=${operation}&symbol=${SYMBOL}&time_in_force=GoodTillCancel&timestamp=${Date.now()}`;
-//   const sign = hashParams(params, bybit_secret);
-
-//   const URI = `${BASE_URI_BUY_SELL}${params}&sign=${sign}`;
-
-//   const { data: result } = await axios.post(URI);
-//   console.log("Status order:", result);
+// const hashParams = (params, secret) => {
+//   return crypto.createHmac("sha256", secret).update(params).digest("hex");
 // };
 
 const orderBinance = async (qntCoins, SYMBOL, operation) => {
-  if (operation === "Buy") {
-    const result = await binance.futuresMarketBuy(SYMBOL, qntCoins);
-
-    console.log("Result on buy in HASHING:", result);
-    const { orderId, cumQuote } = result;
-
-    if (!fs.existsSync(`./${SYMBOL}_logs`)) {
-      fs.writeFileSync(`./${SYMBOL}_logs`, `LOGS FOR ${SYMBOL}\n`);
+  try{
+    if (operation === "Buy") {
+      const result = await binance.futuresMarketBuy(SYMBOL, qntCoins);
+  
+      console.log("Result on buy in HASHING:", result);
+      const { orderId, cumQuote } = result;
+  
+      if (!fs.existsSync(`./${SYMBOL}_logs`)) {
+        fs.writeFileSync(`./${SYMBOL}_logs`, `LOGS FOR ${SYMBOL}\n`);
+      }
+      const logsRow = `${format(
+        new Date(),
+        "dd.MM, EEEE, HH:mm:ss"
+      )} | #${orderId} ${SYMBOL}: ${operation} ---- ${qntCoins} by $${
+        cumQuote / qntCoins
+      } per coin\n`;
+      fs.appendFileSync(`./${SYMBOL}_logs`, logsRow);
+  
+      return orderId;
     }
-    const logsRow = `${format(
-      new Date(),
-      "dd.MM, EEEE, HH:mm:ss"
-    )} | #${orderId} ${SYMBOL}: ${operation} ---- ${qntCoins} by $${
-      cumQuote / qntCoins
-    } per coin\n`;
-    fs.appendFileSync(`./${SYMBOL}_logs`, logsRow);
-
-    return orderId;
-  }
-
-  if (operation === "Sell") {
-    const { orderId, avgPrice, cumQuote, origQty } =
-      await binance.futuresMarketSell(SYMBOL, qntCoins);
-
-    if (!fs.existsSync(`./${SYMBOL}_logs`)) {
-      fs.writeFileSync(`./${SYMBOL}_logs`, `LOGS FOR ${SYMBOL}\n`);
+  
+    if (operation === "Sell") {
+      const { orderId, avgPrice, cumQuote, origQty } =
+        await binance.futuresMarketSell(SYMBOL, qntCoins);
+  
+      if (!fs.existsSync(`./${SYMBOL}_logs`)) {
+        fs.writeFileSync(`./${SYMBOL}_logs`, `LOGS FOR ${SYMBOL}\n`);
+      }
+      const logsRow = `${format(
+        new Date(),
+        "dd.MM, EEEE, HH:mm:ss"
+      )} | #${orderId} ${SYMBOL}: ${operation} ---- ${qntCoins} by $${
+        cumQuote / qntCoins
+      } per coin\n`;
+      fs.appendFileSync(`./${SYMBOL}_logs`, logsRow);
+  
+      return { avgPrice, origQty, cumQuote };
     }
-    const logsRow = `${format(
-      new Date(),
-      "dd.MM, EEEE, HH:mm:ss"
-    )} | #${orderId} ${SYMBOL}: ${operation} ---- ${qntCoins} by $${
-      cumQuote / qntCoins
-    } per coin\n`;
-    fs.appendFileSync(`./${SYMBOL}_logs`, logsRow);
-
-    return { avgPrice, origQty, cumQuote };
+  } catch(e) {
+    console.log('Error in orderBinance method.', e)
   }
+  
 };
 
 const checkOrderStatus = async (SYMBOL, orderId) => {
-  const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
-    orderId,
-  });
+  try {
+    const { avgPrice } = await binance.futuresOrderStatus(SYMBOL, {
+      orderId,
+    });
+  
+    return avgPrice;
+  } catch(e) {
+    console.log('Error in checkOrderStatus method.', e)
+  }
 
-  return avgPrice;
 };
 
 const getAverageOnPosition = async (symbol) => {
-  const { positions } = await binance.futuresAccount();
-  const resultResponse = positions.filter((el) => el.symbol === symbol);
+  try {
+    const { positions } = await binance.futuresAccount();
+    const resultResponse = positions.filter((el) => el.symbol === symbol);
+  
+    const avrPrice = +resultResponse[0].entryPrice;
+    console.log(avrPrice);
+  
+    return avrPrice;
+  } catch(e) {
+    console.log('Error in getAverageOnPosition block. Getting futureAccount.', e);
+  }
 
-  const avrPrice = +resultResponse[0].entryPrice;
-  console.log(avrPrice);
-
-  return avrPrice;
 };
 
 const getBalance = async (symbol) => {
-  const resultRaw = await binance.futuresIncome();
-  const realizedPNLs = resultRaw.filter(
-    (el) => el.symbol === symbol && el.incomeType === "REALIZED_PNL"
-  );
-  if (!realizedPNLs.length) {
-    return 0;
+  try {
+    const resultRaw = await binance.futuresIncome();
+    const realizedPNLs = resultRaw.filter(
+      (el) => el.symbol === symbol && el.incomeType === "REALIZED_PNL"
+    );
+    if (!realizedPNLs.length) {
+      return 0;
+    }
+    const { income } = realizedPNLs[realizedPNLs.length - 1];
+  
+    return income;
+  } catch(e) {
+    console.log('Error in getBalance method.', e)
   }
-  const { income } = realizedPNLs[realizedPNLs.length - 1];
 
-  return income;
 };
 
 const getQntCoinsInPosition = async (symbol) => {
@@ -192,7 +196,34 @@ const getCurrentBalance = async () => {
     Math.round(+cleanRes[0].balance * 100) / 100
   }\n`;
   fs.appendFileSync("./balanceHistory.csv", valueToStore);
+  console.log(`${format(new Date(), "dd.MM HH:mm:ss")} | Record created.`)
   return;
+};
+
+
+const notifyAtProfitpened = async () => {
+  const { positions } = await binance.futuresAccount();
+  const openedPositions = positions.filter(
+    (position) => +position.positionAmt != 0
+  );
+  const result = openedPositions.map((position) => {
+    return {
+      symbol: position.symbol.slice(0, -4),
+      entryPrice: +position.entryPrice,
+      positionAmt: +position.positionAmt,
+      unrealizedProfit: +position.unrealizedProfit,
+    };
+  });
+
+  const sorted = result.sort((a, b) => b.unrealizedProfit - a.unrealizedProfit);
+
+  let response = [];
+
+  for (coin of sorted) {
+    const stat = await getRunnedOrNot(coin);
+    response.push({coin: coin.symbol, pnl: coin.unrealizedProfit.toFixed(3), status: stat})
+  }
+  return response;
 };
 
 // getAverageOnPosition('DOGEUSDT')
@@ -207,4 +238,5 @@ module.exports = {
   getWalletBalance,
   getCurrentBalance,
   getPossitionsInWorkOnBinance,
+  notifyAtProfitpened,
 };

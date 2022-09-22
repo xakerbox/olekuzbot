@@ -42,4 +42,13 @@ const sendErrorMessage = (error) => {
   });
 };
 
-module.exports = { sendBot, sendErrorMessage };
+const notifyOnProtablePnl = (coins) => {
+  const messages = coins.map(coin => {
+    return `⚠️ Милорд, ${coin.coin} хочет порадовать!\nPNL достиг $${coin.pnl}\n`
+  })
+  chatIds.forEach(async (chatId) => {
+    bot.sendMessage(chatId, ...messages);
+  });
+}
+
+module.exports = { sendBot, sendErrorMessage, notifyOnProtablePnl };
