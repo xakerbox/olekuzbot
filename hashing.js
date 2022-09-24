@@ -10,9 +10,6 @@ const fs = require("fs");
 const format = require("date-fns/format");
 const { checkRunBot } = require("./utils/checkrun");
 
-const bybit_api_key = process.env.BYBIT_API_KEY;
-const bybit_secret = process.env.BYBIT_SECRET_KEY;
-
 const binance_api_key = process.env.BINANCE_API_KEY;
 const binance_secret = process.env.BINANCE_API_SECRET;
 
@@ -67,6 +64,8 @@ const orderBinance = async (qntCoins, SYMBOL, operation) => {
         cumQuote / qntCoins
       } per coin\n`;
       fs.appendFileSync(`./${SYMBOL}_logs`, logsRow);
+
+      console.log(`Successfully sell ${qntCoins} ${SYMBOL}`)
   
       return { avgPrice, origQty, cumQuote };
     }
@@ -265,6 +264,36 @@ const notifyAtProfitpened = async () => {
 
 // getPnl();
 
+const getNotRunned = async() => {
+  const { positions } = await binance.futuresAccount();
+  const openedPositions = positions.filter(
+    (position) => +position.positionAmt != 0
+  );
+
+  const workingStack  = openedPositions.map(pos => {
+    return {
+      symbol: pos.symbol.slice(0,-4),
+      qty: pos.positionAmt,
+    }
+  })
+
+  const arrayOfNotRunnedCoins = [];
+
+  for (position of workingStack) {
+    const coinStatus = await getRunnedOrNot(position);
+    if (coinStatus === '🔴') {
+      arrayOfNotRunnedCoins.push({
+        symbol: position.symbol,
+        qty: position.qty,
+      })
+    }
+  }
+
+  return arrayOfNotRunnedCoins;
+}
+
+getNotRunned();
+
 module.exports = {
   orderBinance,
   checkOrderStatus,
@@ -276,4 +305,5 @@ module.exports = {
   getCurrentBalance,
   getPossitionsInWorkOnBinance,
   notifyAtProfitpened,
+  getNotRunned,
 };

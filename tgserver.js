@@ -3,6 +3,8 @@ const {
   getAllOpened,
   getWalletBalance,
   getPossitionsInWorkOnBinance,
+  getNotRunned,
+  orderBinance,
 } = require("./hashing");
 const { dreamCalc } = require("./dreamCalc");
 const { getDailyBalance } = require("./utils/balanceReporter");
@@ -16,12 +18,16 @@ const bot = new TelegramBot(token, { polling: true });
 let constant = 0;
 let allRunnedProcesses = [];
 let allNamesOfRunnedCoins = [];
+let buttonsForSell = [];
+let coinsNoRun = [];
+let notRunnedCoins;
 
 const keyboard = [
   ["🏦 BALANCE 🏦", "🪙 COINS 🪙"],
-  ["🤌 CALC 🤌"],
   ["⏰ PROFIT ЗА СЕГОДНЯ ⏰"],
   ["🛠 ОСТАНОВИТЬ РАБОТЯГУ 🛠"],
+  ["🔋 НАКАЗАТЬ НЕПОКОРНУЮ 🔋"],
+  ["🤌 CALC 🤌"],
 ];
 
 bot.setMyCommands([
@@ -151,5 +157,29 @@ bot.on("message", async (msg) => {
         "dd.MM"
       )}) боты принесли:\n😍 $${await getDailyBalance()}`
     );
+  }
+
+  if (msg.text === "🔋 НАКАЗАТЬ НЕПОКОРНУЮ 🔋") {
+    notRunnedCoins = await getNotRunned();
+
+    coinsNoRun = notRunnedCoins.map(coin => `💎 ${coin.symbol} 💎`);
+
+    buttonsForSell = notRunnedCoins.map(coin => {
+      return [`💎 ${coin.symbol} 💎`]
+    })
+    buttonsForSell.push(['ВЫЙТИ'])
+
+    await bot.sendMessage(msg.chat.id, '🔨 Выбери, кто сейчас пойдет с молотка?', {
+      reply_markup: {
+        keyboard: buttonsForSell,
+      }})
+  }
+
+  if (coinsNoRun.includes(msg.text)) {
+    const coinClean = msg.text.replace(/💎/gm, '').trim();
+    const [coinToSell] = notRunnedCoins.filter(coin => coin.symbol === coinClean);
+    console.log('Sell coin:', coinToSell.symbol, 'quantity:', coinToSell.qty);
+    // await orderBinance(coinToSell.qty, `${coinToSell.symbol}USDT`, 'Sell')
+    await bot.sendMessage(msg.chat.id, `⚖️ Ну шо, продать, так продать.\n 👉 ${coinToSell.qty} ${coinToSell.symbol} сожжены!`)
   }
 });
