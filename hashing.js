@@ -1,10 +1,10 @@
 const crypto = require("crypto");
 const axios = require("axios");
-require("dotenv").config({
-  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
-});
+// require("dotenv").config({
+//   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+// });
 const { getRunnedOrNot } = require('./utils/checkrun')
-// require("dotenv").config(); // LOCAL TEST
+require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
@@ -150,11 +150,14 @@ const getAllOpened = async () => {
     (position) => +position.positionAmt != 0
   );
   const result = openedPositions.map((position) => {
+    const pnlPercents = Math.round((+position.unrealizedProfit/ (+position.positionAmt * +position.entryPrice))*1000*100)/100
+
     return {
       symbol: position.symbol.slice(0, -4),
       entryPrice: +position.entryPrice,
       positionAmt: +position.positionAmt,
       unrealizedProfit: +position.unrealizedProfit,
+      pnlPercents,
     };
   });
 
@@ -169,7 +172,7 @@ const getAllOpened = async () => {
         coin.positionAmt
       }</b> <a href='https://www.binance.com/en/futures/${coin.symbol}usdt'>${
         coin.symbol
-      }</a> | PNL: $${coin.unrealizedProfit.toFixed(3)}`
+      }</a> | PNL: $${coin.unrealizedProfit.toFixed(3)} (${coin.pnlPercents})`
     );
   }
   return `В работе <b>${response.length} монет</b>:\n${response}`;
@@ -226,7 +229,38 @@ const notifyAtProfitpened = async () => {
   return response;
 };
 
-// getAverageOnPosition('DOGEUSDT')
+
+// const getPnl = async () => {
+//   const { positions } = await binance.futuresAccount();
+//   const openedPositions = positions.filter(
+//     (position) => +position.positionAmt != 0
+//   );
+
+//   console.log(openedPositions);
+//   const result = openedPositions.map((position) => {
+//     return {
+//       symbol: position.symbol.slice(0, -4),
+//       entryPrice: +position.entryPrice,
+//       positionAmt: +position.positionAmt,
+//       unrealizedProfit: +position.unrealizedProfit,
+//       notional: +position.notional,
+//     };
+//   });
+// }
+
+
+
+//  15.61252 - куплено
+//  15.64878 - актуальная
+// +2.15%
+
+
+// 15,5288
+// 15.55049961
+// Long position floating PNL = Position Size × (Index Price - Cost Price);
+
+
+getPnl();
 
 module.exports = {
   orderBinance,
