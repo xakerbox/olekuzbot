@@ -1,10 +1,10 @@
 const crypto = require("crypto");
 const axios = require("axios");
-// require("dotenv").config({
-//   path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
-// });
+require("dotenv").config({
+  path: "/Users/vladimir/Documents/TradeBot/ByBitBot/.env",
+});
 const { getRunnedOrNot } = require('./utils/checkrun')
-require("dotenv").config(); // LOCAL TEST
+// require("dotenv").config(); // LOCAL TEST
 const Binance = require("node-binance-api");
 const fs = require("fs");
 const format = require("date-fns/format");
@@ -167,12 +167,15 @@ const getAllOpened = async () => {
 
   for (coin of sorted) {
     const stat = await getRunnedOrNot(coin);
+    if (coin.pnlPercents > 0) {
+      coin.pnlPercents = `+${coin.pnlPercents.toString()}`
+    }
     response.push(
       `\n   ${stat} <b>${
         coin.positionAmt
       }</b> <a href='https://www.binance.com/en/futures/${coin.symbol}usdt'>${
         coin.symbol
-      }</a> | PNL: $${coin.unrealizedProfit.toFixed(3)} (${coin.pnlPercents})`
+      }</a> | $${coin.unrealizedProfit.toFixed(3)} | ${coin.pnlPercents}%`
     );
   }
   return `В работе <b>${response.length} монет</b>:\n${response}`;
@@ -260,7 +263,7 @@ const notifyAtProfitpened = async () => {
 // Long position floating PNL = Position Size × (Index Price - Cost Price);
 
 
-getPnl();
+// getPnl();
 
 module.exports = {
   orderBinance,
