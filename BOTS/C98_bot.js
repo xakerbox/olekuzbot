@@ -20,13 +20,13 @@ require("dotenv").config({
 //////////////////////////////////////////////
 
 const coinName = "C98USDT";
-let stackValue = 70;
+let stackValue = 100;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.7, 1.5, 4, 8, 13];
 const fixingIncomeValue = 1.0038;
 const decimals = 4; // Количество знаков после запятой в округлениях.
-const delayBetweenRequest = 1200;
+const delayBetweenRequest = 1700;
 
 const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
 
@@ -85,37 +85,42 @@ const getRates = async () => {
 };
 
 const startTrade = async (coinsBuyQnt) => {
-  if (startCounter === 0) {
-    try {
-      const startPrice = await getRates();
-      console.log("Курс покупки (опрошенная):", startPrice);
-      console.log("Параметры для ORDERID:", coinsBuyQnt, coinName);
-
-      const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
-      console.log("ORDER ID:", orderId);
-      realOrderPrice = await checkOrderStatus(coinName, orderId);
-
-      console.log("Реальный курс сделки: ", realOrderPrice);
-    } catch (e) {
-      console.log(e);
+  try {
+    if (startCounter === 0) {
+      try {
+        const startPrice = await getRates();
+        console.log("Курс покупки (опрошенная):", startPrice);
+        console.log("Параметры для ORDERID:", coinsBuyQnt, coinName);
+  
+        const orderId = await orderBinance(coinsBuyQnt, coinName, "Buy"); // Binance Prod endpoint
+        console.log("ORDER ID:", orderId);
+        realOrderPrice = await checkOrderStatus(coinName, orderId);
+  
+        console.log("Реальный курс сделки: ", realOrderPrice);
+      } catch (e) {
+        console.log(e);
+      }
+  
+      if (currentTier[1] === 0) {
+        coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
+        coinsQuantity = await countStartCoinsValue(
+          coinsPrices,
+          stackValue * 10,
+          stackDevider
+        );
+      }
+  
+      spendedOnFirstBuy = coinsBuyQnt * realOrderPrice;
+      startCounter = 1;
     }
-
-    if (currentTier[1] === 0) {
-      coinsPrices = await buyPriceValues(+realOrderPrice, middleSplitter);
-      coinsQuantity = await countStartCoinsValue(
-        coinsPrices,
-        stackValue * 10,
-        stackDevider
-      );
-    }
-
-    spendedOnFirstBuy = coinsBuyQnt * realOrderPrice;
-    startCounter = 1;
+  
+    actualBoughtCoins = await getQntCoinsInPosition(coinName);
+  
+    return spendedOnFirstBuy;
+  } catch (e) {
+    console.log('Error in startBuy block', e)
   }
-
-  actualBoughtCoins = await getQntCoinsInPosition(coinName);
-
-  return spendedOnFirstBuy;
+  
 };
 
 async function main() {
