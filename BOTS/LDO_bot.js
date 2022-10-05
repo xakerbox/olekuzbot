@@ -19,16 +19,18 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "TRXUSDT";
-let stackValue = 100;
+const coinName = "LDOUSDT";
+let stackValue = 106;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.7, 1.5, 4, 8, 13];
 const fixingIncomeValue = 1.0038;
-const decimals = 5; // Количество знаков после запятой в округлениях.
+const decimals = 4; // Количество знаков после запятой в округлениях.
 const delayBetweenRequest = 1700;
 
-const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
+
+const BINANCE_GET_RATES_FUTURES = `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${coinName}`
+// const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
 
 let lastPrice = 0;
 let zakupka = 0;
@@ -70,12 +72,12 @@ const timer = async () => {
 
 const getRates = async () => {
   try {
-    const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
+    const { data: response } = await axios.get(BINANCE_GET_RATES_FUTURES); // Binance Prod Get Rates
     console.log("CURRENT TEST PRICE:", +response.price);
-    lastPrice = +response.price; // Binance Prod Get Rates
-    bufferPrice = +response.price; // Binance Prod Get Rates
+    lastPrice = +response.markPrice; // Binance Prod Get Rates
+    bufferPrice = +response.markPrice; // Binance Prod Get Rates
 
-    return +response.price;
+    return +response.markPrice;
   } catch (e) {
     console.log("ERROR! Server not responsing!");
     lastPrice = bufferPrice;

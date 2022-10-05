@@ -49,14 +49,22 @@ bot.onText(/\/start/, async (msg) => {
 
 bot.on("message", async (msg) => {
   if (msg.text === "🪙 COINS 🪙") {
-    await bot.sendMessage(msg.chat.id, await getAllOpened(), {
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-    });
+    try {
+      await bot.sendMessage(msg.chat.id, await getAllOpened(), {
+        parse_mode: "HTML",
+        disable_web_page_preview: true,
+      });
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   if (msg.text === "🏦 BALANCE 🏦") {
-    await bot.sendMessage(msg.chat.id, await getWalletBalance());
+    try {
+      await bot.sendMessage(msg.chat.id, await getWalletBalance());
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   if (msg.text === "ВЫЙТИ") {
@@ -130,7 +138,7 @@ bot.on("message", async (msg) => {
     for (let i = 0; i < allNamesOfRunnedCoins.length; i += 2) {
       buttons.push(allNamesOfRunnedCoins.slice(i, i + 2));
     }
-    buttons.push(["ВЫЙТИ"])
+    buttons.push(["ВЫЙТИ"]);
 
     await bot.sendMessage(msg.chat.id, "🍺 Выбирай, кому пора на отдых.", {
       reply_markup: {
@@ -150,36 +158,51 @@ bot.on("message", async (msg) => {
   }
 
   if (msg.text === "⏰ PROFIT ЗА СЕГОДНЯ ⏰") {
-    await bot.sendMessage(
-      msg.chat.id,
-      `\n🤑 За сегодня (${format(
-        new Date(),
-        "dd.MM"
-      )}) боты принесли:\n😍 $${await getDailyBalance()}`
-    );
+    try {
+      const { dailyProfit, percentProfit } = await getDailyBalance();
+      await bot.sendMessage(
+        msg.chat.id,
+        `\n🤑 За сегодня (${format(
+          new Date(),
+          "dd.MM"
+        )}) боты принесли:\n😍 $${dailyProfit} или +${percentProfit}% с начала дня.`
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   if (msg.text === "🔋 НАКАЗАТЬ НЕПОКОРНУЮ 🔋") {
     notRunnedCoins = await getNotRunned();
 
-    coinsNoRun = notRunnedCoins.map(coin => `💎 ${coin.symbol} 💎`);
+    coinsNoRun = notRunnedCoins.map((coin) => `💎 ${coin.symbol} 💎`);
 
-    buttonsForSell = notRunnedCoins.map(coin => {
-      return [`💎 ${coin.symbol} 💎`]
-    })
-    buttonsForSell.push(['ВЫЙТИ'])
+    buttonsForSell = notRunnedCoins.map((coin) => {
+      return [`💎 ${coin.symbol} 💎`];
+    });
+    buttonsForSell.push(["ВЫЙТИ"]);
 
-    await bot.sendMessage(msg.chat.id, '🔨 Выбери, кто сейчас пойдет с молотка?', {
-      reply_markup: {
-        keyboard: buttonsForSell,
-      }})
+    await bot.sendMessage(
+      msg.chat.id,
+      "🔨 Выбери, кто сейчас пойдет с молотка?",
+      {
+        reply_markup: {
+          keyboard: buttonsForSell,
+        },
+      }
+    );
   }
 
   if (coinsNoRun.includes(msg.text)) {
-    const coinClean = msg.text.replace(/💎/gm, '').trim();
-    const [coinToSell] = notRunnedCoins.filter(coin => coin.symbol === coinClean);
-    console.log('Sell coin:', coinToSell.symbol, 'quantity:', coinToSell.qty);
-    // await orderBinance(coinToSell.qty, `${coinToSell.symbol}USDT`, 'Sell')
-    await bot.sendMessage(msg.chat.id, `⚖️ Ну шо, продать, так продать.\n 👉 ${coinToSell.qty} ${coinToSell.symbol} сожжены!`)
+    const coinClean = msg.text.replace(/💎/gm, "").trim();
+    const [coinToSell] = notRunnedCoins.filter(
+      (coin) => coin.symbol === coinClean
+    );
+    console.log("Sell coin:", coinToSell.symbol, "quantity:", coinToSell.qty);
+    await orderBinance(coinToSell.qty, `${coinToSell.symbol}USDT`, "Sell");
+    await bot.sendMessage(
+      msg.chat.id,
+      `⚖️ Ну шо, продать, так продать.\n 👉 ${coinToSell.qty} ${coinToSell.symbol} сожжены!`
+    );
   }
 });

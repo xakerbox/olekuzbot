@@ -19,11 +19,11 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "1INCHUSDT";
-let stackValue = 100;
+const coinName = "IOTAUSDT";
+let stackValue = 105;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.6, 1.4, 3.5, 7, 12];
+const middleSplitter = [0.7, 1.5, 4, 8, 13];
 const fixingIncomeValue = 1.0038;
 const decimals = 4; // Количество знаков после запятой в округлениях.
 const delayBetweenRequest = 1700;

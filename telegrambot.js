@@ -43,12 +43,17 @@ const sendErrorMessage = (error) => {
 };
 
 const notifyOnProtablePnl = (coins) => {
-  const messages = coins.map(coin => {
-    return `⚠️ Милорд, ${coin.coin} хочет порадовать!\nPNL достиг $${coin.pnl}\n`
-  })
-  chatIds.forEach(async (chatId) => {
-    bot.sendMessage(chatId, ...messages);
-  });
+  try {
+    const messages = coins.map(coin => {
+      return `⚠️ Милорд, ${coin.coin} хочет порадовать!\nPNL достиг $${coin.pnl}\n`
+    })
+    chatIds.forEach(async (chatId) => {
+      bot.sendMessage(chatId, ...messages);
+    });
+  } catch(e) {
+    console.log('Милорд усрался', e)
+  }
+
 }
 
 module.exports = { sendBot, sendErrorMessage, notifyOnProtablePnl };
