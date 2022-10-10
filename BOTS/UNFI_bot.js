@@ -19,17 +19,17 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "1INCHUSDT";
-let stackValue = 100;
+const coinName = "UNFIUSDT";
+let stackValue = 123;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.4, 3.5, 7, 12];
 const fixingIncomeValue = 1.0038;
-const decimals = 4; // Количество знаков после запятой в округлениях.
+const decimals = 3; // Количество знаков после запятой в округлениях.
 const delayBetweenRequest = 1700;
 
 
-const BINANCE_GET_RATES_FUTURES = `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${coinName}`
+const BINANCE_GET_RATES_FUTURES = `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${coinName}` // Вотэто обновленный ендпоинт, он у всех перезапущенных ботов по умолчанию
 // const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
 
 let lastPrice = 0;

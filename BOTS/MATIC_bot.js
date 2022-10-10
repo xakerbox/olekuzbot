@@ -19,8 +19,8 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "XRPUSDT";
-let stackValue = 105;
+const coinName = "MATICUSDT";
+let stackValue = 123;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.7, 1.5, 4, 8, 13];

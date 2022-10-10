@@ -19,13 +19,13 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "1000LUNCUSDT";
-let stackValue = 105;
+const coinName = "EOSUSDT";
+let stackValue = 123;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.7, 1.5, 4, 8, 13];
+const middleSplitter = [0.6, 1.4, 3.5, 7, 12];
 const fixingIncomeValue = 1.0038;
-const decimals = 4; // Количество знаков после запятой в округлениях.
+const decimals = 3; // Количество знаков после запятой в округлениях.
 const delayBetweenRequest = 1700;
 
 

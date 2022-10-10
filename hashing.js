@@ -264,11 +264,12 @@ const notifyAtProfitpened = async () => {
 
 // getPnl();
 
-const getNotRunned = async() => {
+const getAllWorking = async() => {
   const { positions } = await binance.futuresAccount();
   const openedPositions = positions.filter(
     (position) => +position.positionAmt != 0
   );
+
 
   const workingStack  = openedPositions.map(pos => {
     return {
@@ -279,9 +280,9 @@ const getNotRunned = async() => {
 
   const arrayOfNotRunnedCoins = [];
 
-  for (position of workingStack) {
+  for (let position of workingStack) {
     const coinStatus = await getRunnedOrNot(position);
-    if (coinStatus === '🔴') {
+    if (coinStatus === '🔴' || coinStatus === '🟢') {
       arrayOfNotRunnedCoins.push({
         symbol: position.symbol,
         qty: position.qty,
@@ -291,8 +292,6 @@ const getNotRunned = async() => {
 
   return arrayOfNotRunnedCoins;
 }
-
-getNotRunned();
 
 module.exports = {
   orderBinance,
@@ -305,5 +304,5 @@ module.exports = {
   getCurrentBalance,
   getPossitionsInWorkOnBinance,
   notifyAtProfitpened,
-  getNotRunned,
+  getAllWorking,
 };

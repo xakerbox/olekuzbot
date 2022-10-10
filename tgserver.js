@@ -3,7 +3,7 @@ const {
   getAllOpened,
   getWalletBalance,
   getPossitionsInWorkOnBinance,
-  getNotRunned,
+  getAllWorking,
   orderBinance,
 } = require("./hashing");
 const { dreamCalc } = require("./dreamCalc");
@@ -173,7 +173,7 @@ bot.on("message", async (msg) => {
   }
 
   if (msg.text === "🔋 НАКАЗАТЬ НЕПОКОРНУЮ 🔋") {
-    notRunnedCoins = await getNotRunned();
+    notRunnedCoins = await getAllWorking();
 
     coinsNoRun = notRunnedCoins.map((coin) => `💎 ${coin.symbol} 💎`);
 
@@ -182,12 +182,19 @@ bot.on("message", async (msg) => {
     });
     buttonsForSell.push(["ВЫЙТИ"]);
 
+    const newB = buttonsForSell.flat();
+
+    const buttonsToShow = [];
+    for (let i = 0; i < newB.length; i += 2 ) {
+      buttonsToShow.push([newB.slice(i, i + 2)]);
+    }
+
     await bot.sendMessage(
       msg.chat.id,
       "🔨 Выбери, кто сейчас пойдет с молотка?",
       {
         reply_markup: {
-          keyboard: buttonsForSell,
+          keyboard: buttonsToShow.flat(),
         },
       }
     );

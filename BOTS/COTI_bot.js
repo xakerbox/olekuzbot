@@ -19,7 +19,7 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "ATAUSDT";
+const coinName = "COTIUSDT";
 let stackValue = 123;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;

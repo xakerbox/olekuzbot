@@ -20,7 +20,7 @@ require("dotenv").config({
 //////////////////////////////////////////////
 
 const coinName = "DYDXUSDT";
-let stackValue = 100;
+let stackValue = 123;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
 const middleSplitter = [0.6, 1.4, 3.5, 7, 12];

@@ -1,4 +1,5 @@
 const axios = require("axios");
+const {readFileSync} = require('fs');
 const { buyPriceValues, countStartCoinsValue } = require("../cleanCalc");
 const format = require("date-fns/format");
 const { rounder } = require("../utils/rounder");
@@ -19,16 +20,24 @@ require("dotenv").config({
 // PARAMETERS
 //////////////////////////////////////////////
 
-const coinName = "APEUSDT";
-let stackValue = 100;
+const coinName = "CHZUSDT";
+let stackValue = 123;
 // const stackSize = stackValue * 10;
 const stackDevider = 30;
-const middleSplitter = [0.7, 1.5, 4, 8, 13];
-const fixingIncomeValue = 1.0038;
-const decimals = 3; // Количество знаков после запятой в округлениях.
-const delayBetweenRequest = 1700;
+// const middleSplitter = [0.7, 1.5, 4, 8, 13];
+// const fixingIncomeValue = 1.0035;
+// const decimals = 5; // Количество знаков после запятой в округлениях.
+// const delayBetweenRequest = 1700;
 
-const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
+
+const readConfig = () => {
+  const configBuffer = readFileSync(`./${coinName.slice(0, -4)}_config.txt`, 'utf8');
+  const parsedConfig = JSON.parse(configBuffer);
+  return parsedConfig;
+}
+
+const BINANCE_GET_RATES_FUTURES = `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${coinName}`
+// const BINANCE_URL_GET_RATES = `https://api.binance.com/api/v3/ticker/price?symbol=${coinName}`;
 
 let lastPrice = 0;
 let zakupka = 0;
@@ -60,7 +69,7 @@ let realOrderPrice;
 
 let sellCounter = 0;
 
-const timer = async () => {
+const timer = async (delayBetweenRequest) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve("");
@@ -70,12 +79,12 @@ const timer = async () => {
 
 const getRates = async () => {
   try {
-    const { data: response } = await axios.get(BINANCE_URL_GET_RATES); // Binance Prod Get Rates
+    const { data: response } = await axios.get(BINANCE_GET_RATES_FUTURES); // Binance Prod Get Rates
     console.log("CURRENT TEST PRICE:", +response.price);
-    lastPrice = +response.price; // Binance Prod Get Rates
-    bufferPrice = +response.price; // Binance Prod Get Rates
+    lastPrice = +response.markPrice; // Binance Prod Get Rates
+    bufferPrice = +response.markPrice; // Binance Prod Get Rates
 
-    return +response.price;
+    return +response.markPrice;
   } catch (e) {
     console.log("ERROR! Server not responsing!");
     lastPrice = bufferPrice;
@@ -86,6 +95,8 @@ const getRates = async () => {
 
 const startTrade = async (coinsBuyQnt) => {
   try {
+    const { middleSplitter } = readConfig();
+
     if (startCounter === 0) {
       try {
         const startPrice = await getRates();
@@ -125,6 +136,8 @@ const startTrade = async (coinsBuyQnt) => {
 
 async function main() {
   const currentTime = format(new Date(), "dd MMMM kk:mm:ss");
+  const { decimals, middleSplitter } = readConfig();
+
 
   const currentPrice = await getRates();
 
@@ -214,8 +227,16 @@ async function main() {
   }
 
   priceToSell = await getAverageOnPosition(coinName);
+  
+  //OLD VERSION:
+  // let ourWillingPrice = priceToSell * fixingIncomeValue;
+  //
 
+  //NEW VERSION:
+  const { fixingIncomeValue } = readConfig();
   let ourWillingPrice = priceToSell * fixingIncomeValue;
+  //
+
   console.log("ЦЕНА ДЛЯ ПРОДАЖИ:", rounder(ourWillingPrice, 6));
 
   if (currentPrice > ourWillingPrice) {
@@ -348,7 +369,8 @@ async function main() {
 const startBot = async () => {
   console.time("Time one cycle");
   await main();
-  await timer();
+  const { delayBetweenRequest } = readConfig();
+  await timer(delayBetweenRequest);
   console.timeEnd("Time one cycle");
   startBot();
 };

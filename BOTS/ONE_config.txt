@@ -1,0 +1,6 @@
+{
+    "middleSplitter": [0.7, 1.5, 4, 8, 13],
+    "fixingIncomeValue": 1.0021,
+    "decimals": 5,
+    "delayBetweenRequest": 1700
+}

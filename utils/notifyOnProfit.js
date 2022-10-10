@@ -6,7 +6,11 @@ const checkPnlValue = async () => {
     console.log(result);
     const filteredCoins = result.filter(coin => coin.status === "🔴" && coin.pnl > 0);
     if (filteredCoins.length) {
-      notifyOnProtablePnl(filteredCoins);
+      try {
+        notifyOnProtablePnl(filteredCoins);
+      } catch(e) {
+        console.log('Erorr in Profit notifier', e)
+      }
     }
   } catch(e) {
     console.log('Error in notifyOnProfit module', e)
